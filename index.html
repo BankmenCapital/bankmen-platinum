@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bankmen Platinum — Battlepass</title>
 
-  <!-- TAILWIND CSS -->
+  <!-- TAILWIND -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
-  <!-- BS58 & NACL (browser-ready) -->
-  <script src="https://cdn.jsdelivr.net/npm/bs58@4.0.1/index.min.js"></script>
+  <!-- BS58 & NACL (browser-friendly globals) -->
+  <script src="https://cdn.jsdelivr.net/npm/bs58@4.0.1/dist/bs58.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
 
   <style>
@@ -27,7 +27,6 @@
 </head>
 <body class="flex flex-col items-center min-h-screen">
 
-  <!-- CONNECT WALLET SECTION -->
   <div id="connect-section" class="text-center max-w-lg">
     <h1 class="text-5xl font-bold mb-2 text-yellow-400">BANKMEN PLATINUM</h1>
     <p class="text-gray-400 mb-8">Post golf. Earn XP. Unlock glory.</p>
@@ -37,7 +36,6 @@
     <p id="status" class="mt-6 text-sm text-red-400 min-h-[1.5em]"></p>
   </div>
 
-  <!-- DASHBOARD SECTION -->
   <div id="dashboard" class="hidden w-full max-w-5xl mt-10">
     <div class="flex justify-between items-center mb-6">
       <div>
@@ -82,7 +80,6 @@
   </div>
 
   <script>
-    // YOUR WORKER URL
     const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
 
     let token = null;
@@ -113,7 +110,7 @@
           const encoded = new TextEncoder().encode(message);
           const result = await window.solana.signMessage(encoded, "utf8");
 
-          // bs58 encode (browser-ready)
+          // USE browser-global bs58
           const sigBase58 = bs58.encode(result.signature);
 
           status.textContent = "Verifying NFT...";
@@ -165,7 +162,6 @@
       });
     }
 
-    // Initialize
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", init);
     } else {
