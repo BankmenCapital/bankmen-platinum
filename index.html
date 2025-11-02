@@ -40,7 +40,7 @@
           }
         }
         for (var i = 0; buffer[i] === 0 && i < buffer.length - 1; ++i) {
-          digits.push( 0 );
+          digits.push(0);
         }
         return digits.reverse().map(function (digit) { return _ALPHABET[digit]; }).join('');
       }
@@ -103,7 +103,6 @@
     @keyframes modalPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .modal h2 { font-size: 2.5rem; color: #fbbf24; margin-bottom: 1rem; }
     .modal p { font-size: 1.2rem; margin-bottom: 1.5rem; }
-    .modal button { padding: 1rem 2rem; bg-yellow-500 text-black font-bold text-lg rounded-full hover:bg-yellow-400 transition shadow-lg; }
   </style>
 </head>
 <body class="flex flex-col items-center min-h-screen">
@@ -132,11 +131,11 @@
     <div class="xp-bar"><div class="xp-fill" id="xp-fill"></div></div>
     <p class="text-sm text-gray-400 text-right" id="xp-progress">Level <span id="level">1</span> — 0 / 100 XP</p>
 
-    <!-- SEASON BANNER (GITHUB REPO) -->
+    <!-- SEASON BANNER -->
     <div class="mt-10 text-center">
       <h3 class="text-2xl font-bold mb-4 text-yellow-400">Season 1: Sigma Vault Ascent</h3>
       <div class="relative max-w-4xl mx-auto">
-        <img src="season1-banner.jpg" alt="Season 1 Wallpaper" class="w-full rounded-xl shadow-2xl border-4 border-yellow-600">
+        <img src="./assets/season1-banner.jpg" alt="Season 1 Wallpaper" class="w-full rounded-xl shadow-2xl border-4 border-yellow-600">
       </div>
       <p class="mt-4 text-gray-400">Right-click to save as wallpaper • Exclusive for Platinum Holders</p>
     </div>
@@ -160,11 +159,11 @@
     </a>
   </div>
 
-  <!-- WELCOME MODAL -->
+  <!-- WELCOME MODAL (POP-UP MESSAGE) -->
   <div id="welcome-modal" class="modal-overlay hidden">
     <div class="modal">
       <h2 class="text-yellow-400">Welcome to Season 1!</h2>
-      <p class="text-gray-300">Season 1 is live. Grind daily for +10 XP, post golf swings, and climb the tiers. Exclusive wallpapers, merch, and alpha await.</p>
+      <p class="text-gray-300">Sigma Vault Ascent is live. Grind daily for +10 XP, post golf swings, and climb the tiers. Exclusive wallpapers, merch, and alpha await.</p>
       <p class="text-gray-400 text-sm mb-6">Work hard. Play hard. Flex louder.</p>
       <button id="close-modal" class="px-8 py-4 bg-yellow-500 text-black font-bold text-lg rounded-full hover:bg-yellow-400 transition shadow-lg">
         Dive In
@@ -173,7 +172,6 @@
   </div>
 
   <script>
-    // CHANGE THIS
     const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
 
     let token = null;
@@ -181,6 +179,8 @@
     let currentXP = 0;
     const XP_PER_LEVEL = 100;
     const MAX_LEVEL = 8;
+
+    // NO showWelcomeIfFirst HERE — MOVED TO AFTER LOGIN
 
     function waitForPhantom() {
       if (window.solana?.isPhantom && typeof bs58 !== 'undefined') {
@@ -220,7 +220,7 @@
             document.getElementById("dashboard").classList.remove("hidden");
             document.getElementById("wallet").textContent = pubkey.slice(0,4)+"..."+pubkey.slice(-4);
             await loadXP();
-            showWelcomeIfFirst();
+            showWelcomeIfFirst();  // ONLY AFTER DASHBOARD
           } else {
             status.textContent = data.error || "No NFT found";
           }
@@ -251,15 +251,14 @@
       });
     }
 
-    // FIXED: Modal only after successful login + await loadXP
     function showWelcomeIfFirst() {
-      if (!pubkey) return; // Safety
+      if (!pubkey) return;
       const welcomeKey = `welcome_shown_${pubkey}`;
-      const shown = localStorage.getItem(welcomeKey);
-      if (!shown) {
+      if (!localStorage.getItem(welcomeKey)) {
         const modal = document.getElementById("welcome-modal");
         modal.classList.remove("hidden");
-        document.getElementById("close-modal").onclick = () => {
+        const closeBtn = document.getElementById("close-modal");
+        closeBtn.onclick = () => {
           modal.classList.add("hidden");
           localStorage.setItem(welcomeKey, "true");
         };
