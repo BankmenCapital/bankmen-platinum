@@ -8,8 +8,76 @@
   <!-- TAILWIND -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
-  <!-- BS58 GLOBAL (UMD - DEFINES `bs58`) -->
-  <script src="https://cdn.jsdelivr.net/npm/bs58@4.0.1/index.js"></script>
+  <!-- BS58 (EMBEDDED - NO CDN, NO REQUIRE, GLOBAL bs58) -->
+  <script>
+    (function () {
+      var bas58 = {};
+
+      var _ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+      var _BASE = 58;
+      var _MAP = {};
+      for (var i = 0; i < _ALPHABET.length; i++) {
+        _MAP[_ALPHABET.charAt(i)] = i;
+      }
+
+      function encode(buffer) {
+        if (buffer.length === 0) return '';
+        var digits = [0];
+        for (var i = 0; i < buffer.length; ++i) {
+          for (var j = 0; j < digits.length; ++j) {
+            digits[j] <<= 8;
+          }
+          digits[0] += buffer[i];
+          var carry = 0;
+          for (var k = 0; k < digits.length; ++k) {
+            digits[k] += carry;
+            carry = digits[k] / _BASE | 0;
+            digits[k] %= _BASE;
+          }
+          while (carry) {
+            digits.push(carry % _BASE);
+            carry = carry / _BASE | 0;
+          }
+        }
+        for (var i = 0; buffer[i] === 0 && i < buffer.length - 1; ++i) {
+          digits.push(0);
+        }
+        return digits.reverse().map(function (digit) { return _ALPHABET[digit]; }).join('');
+      }
+
+      function decode(string) {
+        if (string.length === 0) return new Uint8Array(0);
+        var bytes = [0];
+        for (var i = 0; i < string.length; i++) {
+          var c = string[i];
+          if (!(c in _MAP)) throw new Error('Invalid character');
+          var value = _MAP[c];
+          for (var j = 0; j < bytes.length; ++j) {
+            bytes[j] *= _BASE;
+          }
+          bytes[0] += value;
+          var carry = 0;
+          for (var j = 0; j < bytes.length; ++j) {
+            bytes[j] += carry;
+            carry = bytes[j] >> 8;
+            bytes[j] &= 0xff;
+          }
+          while (carry) {
+            bytes.push(carry & 0xff);
+            carry >>= 8;
+          }
+        }
+        for (var i = 0; string[i] === '1' && i < string.length - 1; ++i) {
+          bytes.push(0);
+        }
+        return new Uint8Array(bytes.reverse());
+      }
+
+      bas58.encode = encode;
+      bas58.decode = decode;
+      window.bs58 = bas58;
+    })();
+  </script>
 
   <!-- TWEETNACL -->
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
@@ -91,12 +159,11 @@
     const XP_PER_LEVEL = 100;
     const MAX_LEVEL = 8;
 
-    // WAIT FOR BS58 + PHANTOM
-    function waitForReady() {
-      if (typeof bs58 !== 'undefined' && window.solana?.isPhantom) {
+    function waitForPhantom() {
+      if (window.solana?.isPhantom && typeof bs58 !== 'undefined') {
         initApp();
       } else {
-        setTimeout(waitForReady, 100);
+        setTimeout(waitForPhantom, 100);
       }
     }
 
@@ -106,17 +173,17 @@
 
       btn.onclick = async () => {
         try {
-          status.textContent = "Connecting...";
+          status.textContent = "Opening Phantom...";
           const resp = await window.solana.connect();
           pubkey = resp.publicKey.toBase58();
-          status.textContent = "Signing...";
+          status.textContent = "Signing message...";
 
           const message = `Bankmen Platinum - ${Date.now()}`;
           const encoded = new TextEncoder().encode(message);
           const result = await window.solana.signMessage(encoded, "utf8");
           const sigBase58 = bs58.encode(result.signature);
 
-          status.textContent = "Verifying...";
+          status.textContent = "Verifying NFT...";
           const res = await fetch(`${WORKER_URL}/auth`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -131,7 +198,7 @@
             document.getElementById("wallet").textContent = pubkey.slice(0,4)+"..."+pubkey.slice(-4);
             loadXP();
           } else {
-            status.textContent = data.error || "No NFT";
+            status.textContent = data.error || "No NFT found";
           }
         } catch (err) {
           status.textContent = "Error: " + err.message;
@@ -160,8 +227,7 @@
       });
     }
 
-    // START
-    waitForReady();
+    waitForPhantom();
   </script>
 </body>
 </html>
