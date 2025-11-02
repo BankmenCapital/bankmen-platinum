@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bankmen Platinum — Battlepass</title>
 
-  <!-- TAILWIND -->
+  <!-- TAILWIND (jsDelivr) -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
-  <!-- BS58 & NACL (browser-friendly globals) -->
-  <script src="https://cdn.jsdelivr.net/npm/bs58@4.0.1/dist/bs58.min.js"></script>
+  <!-- BS58 & NACL (jsDelivr — WORKS 100%) -->
+  <script src="https://cdn.jsdelivr.net/npm/bs58@4.0.1/index.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
 
   <style>
@@ -80,7 +80,8 @@
   </div>
 
   <script>
-    const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
+    // CHANGE THIS
+    const WORKER_URL = "https://nft-dashboard-verifier.your-subdomain.workers.dev";
 
     let token = null;
     let pubkey = null;
@@ -109,8 +110,6 @@
           const message = `Bankmen Platinum - ${Date.now()}`;
           const encoded = new TextEncoder().encode(message);
           const result = await window.solana.signMessage(encoded, "utf8");
-
-          // USE browser-global bs58
           const sigBase58 = bs58.encode(result.signature);
 
           status.textContent = "Verifying NFT...";
@@ -162,6 +161,7 @@
       });
     }
 
+    // Start
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", init);
     } else {
