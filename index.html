@@ -103,7 +103,7 @@
     @keyframes modalPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .modal h2 { font-size: 2.5rem; color: #fbbf24; margin-bottom: 1rem; }
     .modal p { font-size: 1.2rem; margin-bottom: 1.5rem; }
-    .modal button { px-8 py-4 bg-yellow-500 text-black font-bold text-lg rounded-full hover:bg-yellow-400 transition shadow-lg; }
+    .modal button { padding: 1rem 2rem; bg-yellow-500 text-black font-bold text-lg rounded-full hover:bg-yellow-400 transition shadow-lg; }
   </style>
 </head>
 <body class="flex flex-col items-center min-h-screen">
@@ -132,7 +132,7 @@
     <div class="xp-bar"><div class="xp-fill" id="xp-fill"></div></div>
     <p class="text-sm text-gray-400 text-right" id="xp-progress">Level <span id="level">1</span> — 0 / 100 XP</p>
 
-    <!-- NEW SEASON BANNER SECTION (GITHUB REPO IMAGE) -->
+    <!-- SEASON BANNER (GITHUB REPO) -->
     <div class="mt-10 text-center">
       <h3 class="text-2xl font-bold mb-4 text-yellow-400">Season 1: Sigma Vault Ascent</h3>
       <div class="relative max-w-4xl mx-auto">
@@ -219,7 +219,8 @@
             document.getElementById("connect-section").classList.add("hidden");
             document.getElementById("dashboard").classList.remove("hidden");
             document.getElementById("wallet").textContent = pubkey.slice(0,4)+"..."+pubkey.slice(-4);
-            loadXP().then(showWelcomeIfFirst);
+            await loadXP();
+            showWelcomeIfFirst();
           } else {
             status.textContent = data.error || "No NFT found";
           }
@@ -239,7 +240,7 @@
     function updateXP() {
       const level = Math.min(Math.floor(currentXP / XP_PER_LEVEL) + 1, MAX_LEVEL);
       const progress = (currentXP % XP_PER_LEVEL) / XP_PER_LEVEL * 100;
-      document.getElement #xp").textContent = currentXP;
+      document.getElementById("xp").textContent = currentXP;
       document.getElementById("xp-fill").style.width = progress + "%";
       document.getElementById("level").textContent = level;
       document.getElementById("xp-progress").textContent = `Level ${level} — ${currentXP % XP_PER_LEVEL} / ${XP_PER_LEVEL} XP`;
@@ -250,14 +251,16 @@
       });
     }
 
-    // WELCOME MODAL LOGIC
-    async function showWelcomeIfFirst() {
+    // FIXED: Modal only after successful login + await loadXP
+    function showWelcomeIfFirst() {
+      if (!pubkey) return; // Safety
       const welcomeKey = `welcome_shown_${pubkey}`;
       const shown = localStorage.getItem(welcomeKey);
       if (!shown) {
-        document.getElementById("welcome-modal").classList.remove("hidden");
+        const modal = document.getElementById("welcome-modal");
+        modal.classList.remove("hidden");
         document.getElementById("close-modal").onclick = () => {
-          document.getElementById("welcome-modal").classList.add("hidden");
+          modal.classList.add("hidden");
           localStorage.setItem(welcomeKey, "true");
         };
       }
