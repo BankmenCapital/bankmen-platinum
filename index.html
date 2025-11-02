@@ -67,7 +67,7 @@
             carry >>= 8;
           }
         }
-        for (var i = 0; string[i] === '1' && i < buffer.length - 1; ++i) {
+        for (var i = 0; string[i] === '1' && i < string.length - 1; ++i) {
           bytes.push(0);
         }
         return new Uint8Array(bytes.reverse());
@@ -106,19 +106,6 @@
   </div>
 
   <div id="dashboard" class="hidden w-full max-w-5xl mt-10">
-    <div class="flex justify-between items-center mb-6">
-      <div>
-        <h2 class="text-3xl font-bold">Welcome, <span id="wallet">...</span>!</h2>
-        <p class="text-gray-400">Your NFT is verified.</p>
-      </div>
-      <div class="text-right">
-        <div class="text-4xl font-bold text-yellow-400" id="xp">0</div>
-        <p class="text-sm text-gray-400">Total XP</p>
-      </div>
-    </div>
-
-    <div class="xp-bar"><div class="xp-fill" id="xp-fill"></div></div>
-    <p class="text-sm text-gray-400 text-right" id="xp-progress">Level <span id="level">1</span> — 0 / 100 XP</p>
 
     <!-- SEASON BANNER -->
     <div class="mt-10 text-center">
@@ -126,16 +113,33 @@
       <div class="relative max-w-4xl mx-auto">
         <img src="season1-banner.jpg" alt="Season 1 Wallpaper" class="w-full rounded-xl shadow-2xl border-4 border-yellow-600">
       </div>
-      <p class="mt-4 text-gray-400">Right-click to save as wallpaper • Exclusive for Platinum Holders</p>
     </div>
 
-    <!-- WELCOME MESSAGE AS STATIC TEXT (UNDER BANNER, ABOVE LEVELS) -->
+    <!-- WELCOME MESSAGE AS STATIC TEXT -->
     <div class="mt-12 max-w-4xl mx-auto text-center bg-gradient-to-r from-yellow-900/20 to-yellow-700/20 border-2 border-yellow-600 rounded-xl p-8 shadow-2xl">
       <h2 class="text-4xl font-bold text-yellow-400 mb-4">Welcome to Season 1!</h2>
       <p class="text-xl text-gray-300 mb-4">Season 1 is live. Grind daily for +10 XP, post golf swings, and climb the tiers.</p>
       <p class="text-lg text-gray-400">Exclusive wallpapers, merch, and alpha await. Work hard. Play hard. Flex louder.</p>
     </div>
 
+    <!-- XP BAR + WELCOME HEADER MOVED HERE (ABOVE BATTLEPASS) -->
+    <div class="mt-12 max-w-4xl mx-auto bg-gradient-to-b from-gray-900 to-gray-800 rounded-xl p-8 shadow-2xl border border-yellow-600">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 class="text-3xl font-bold">Welcome, <span id="wallet">...</span>!</h2>
+          <p class="text-gray-400">Your NFT is verified.</p>
+        </div>
+        <div class="text-right">
+          <div class="text-4xl font-bold text-yellow-400" id="xp">0</div>
+          <p class="text-sm text-gray-400">Total XP</p>
+        </div>
+      </div>
+
+      <div class="xp-bar"><div class="xp-fill" id="xp-fill"></div></div>
+      <p class="text-sm text-gray-400 text-right mt-2" id="xp-progress">Level <span id="level">1</span> — 0 / 100 XP</p>
+    </div>
+
+    <!-- BATTLEPASS LEVELS -->
     <div class="mt-12 battlepass">
       <h3 class="text-2xl font-bold mb-6 text-yellow-400">Battlepass — Season 1: Golf & Glory</h3>
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
