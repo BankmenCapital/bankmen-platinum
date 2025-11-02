@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bankmen Platinum — Battlepass</title>
 
-  <!-- TAILWIND (jsDelivr - WORKS) -->
+  <!-- TAILWIND -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
-  <!-- BS58 BROWSER-SAFE (jsDelivr) -->
-  <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/dist/browser.js"></script>
+  <!-- BS58 GLOBAL (UMD - DEFINES `bs58`) -->
+  <script src="https://cdn.jsdelivr.net/npm/bs58@4.0.1/index.js"></script>
 
-  <!-- TWEETNACL (jsDelivr) -->
+  <!-- TWEETNACL -->
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
 
   <style>
@@ -91,30 +91,32 @@
     const XP_PER_LEVEL = 100;
     const MAX_LEVEL = 8;
 
-    function init() {
+    // WAIT FOR BS58 + PHANTOM
+    function waitForReady() {
+      if (typeof bs58 !== 'undefined' && window.solana?.isPhantom) {
+        initApp();
+      } else {
+        setTimeout(waitForReady, 100);
+      }
+    }
+
+    function initApp() {
       const btn = document.getElementById("connect-btn");
       const status = document.getElementById("status");
 
-      if (!btn) return setTimeout(init, 100);
-
       btn.onclick = async () => {
-        if (!window.solana?.isPhantom) {
-          status.textContent = "Phantom not detected. Install it!";
-          return;
-        }
-
         try {
           status.textContent = "Connecting...";
           const resp = await window.solana.connect();
           pubkey = resp.publicKey.toBase58();
-          status.textContent = "Signing message...";
+          status.textContent = "Signing...";
 
           const message = `Bankmen Platinum - ${Date.now()}`;
           const encoded = new TextEncoder().encode(message);
           const result = await window.solana.signMessage(encoded, "utf8");
           const sigBase58 = bs58.encode(result.signature);
 
-          status.textContent = "Verifying NFT...";
+          status.textContent = "Verifying...";
           const res = await fetch(`${WORKER_URL}/auth`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -129,24 +131,19 @@
             document.getElementById("wallet").textContent = pubkey.slice(0,4)+"..."+pubkey.slice(-4);
             loadXP();
           } else {
-            status.textContent = data.error || "No NFT found";
+            status.textContent = data.error || "No NFT";
           }
         } catch (err) {
           status.textContent = "Error: " + err.message;
-          console.error(err);
         }
       };
     }
 
     async function loadXP() {
-      try {
-        const res = await fetch(`${WORKER_URL}/xp?token=${token}`);
-        const data = await res.json();
-        currentXP = data.xp || 0;
-        updateXP();
-      } catch (err) {
-        console.error("XP load failed", err);
-      }
+      const res = await fetch(`${WORKER_URL}/xp?token=${token}`);
+      const data = await res.json();
+      currentXP = data.xp || 0;
+      updateXP();
     }
 
     function updateXP() {
@@ -163,8 +160,8 @@
       });
     }
 
-    // Start
-    document.addEventListener("DOMContentLoaded", init);
+    // START
+    waitForReady();
   </script>
 </body>
 </html>
