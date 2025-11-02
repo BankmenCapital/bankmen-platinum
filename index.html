@@ -67,7 +67,7 @@
             carry >>= 8;
           }
         }
-        for (var i = 0; string[i] === '1' && i < string.length - 1; ++i) {
+        for (var i = 0; string[i] === '1' && i < buffer.length - 1; ++i) {
           bytes.push(0);
         }
         return new Uint8Array(bytes.reverse());
@@ -92,17 +92,6 @@
     .xp-bar { height: 12px; background: #1f2937; border-radius: 6px; overflow: hidden; margin: 1rem 0; }
     .xp-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); width: 0%; transition: width 1s ease; }
     .hidden { display: none; }
-
-    /* Modal Styles */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 50;
-    }
-    .modal {
-      background: linear-gradient(135deg, #1a1a2e, #16213e); border: 2px solid #fbbf24; border-radius: 16px; padding: 2rem; max-width: 90%; text-align: center; box-shadow: 0 0 40px rgba(251, 191, 36, 0.5); animation: modalPop 0.5s ease;
-    }
-    @keyframes modalPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .modal h2 { font-size: 2.5rem; color: #fbbf24; margin-bottom: 1rem; }
-    .modal p { font-size: 1.2rem; margin-bottom: 1.5rem; }
   </style>
 </head>
 <body class="flex flex-col items-center min-h-screen">
@@ -135,9 +124,16 @@
     <div class="mt-10 text-center">
       <h3 class="text-2xl font-bold mb-4 text-yellow-400">Season 1: Sigma Vault Ascent</h3>
       <div class="relative max-w-4xl mx-auto">
-        <img src="./assets/season1-banner.jpg" alt="Season 1 Wallpaper" class="w-full rounded-xl shadow-2xl border-4 border-yellow-600">
+        <img src="season1-banner.jpg" alt="Season 1 Wallpaper" class="w-full rounded-xl shadow-2xl border-4 border-yellow-600">
       </div>
       <p class="mt-4 text-gray-400">Right-click to save as wallpaper • Exclusive for Platinum Holders</p>
+    </div>
+
+    <!-- WELCOME MESSAGE AS STATIC TEXT (UNDER BANNER, ABOVE LEVELS) -->
+    <div class="mt-12 max-w-4xl mx-auto text-center bg-gradient-to-r from-yellow-900/20 to-yellow-700/20 border-2 border-yellow-600 rounded-xl p-8 shadow-2xl">
+      <h2 class="text-4xl font-bold text-yellow-400 mb-4">Welcome to Season 1!</h2>
+      <p class="text-xl text-gray-300 mb-4">Season 1 is live. Grind daily for +10 XP, post golf swings, and climb the tiers.</p>
+      <p class="text-lg text-gray-400">Exclusive wallpapers, merch, and alpha await. Work hard. Play hard. Flex louder.</p>
     </div>
 
     <div class="mt-12 battlepass">
@@ -159,18 +155,6 @@
     </a>
   </div>
 
-  <!-- WELCOME MODAL (POP-UP MESSAGE) -->
-  <div id="welcome-modal" class="modal-overlay hidden">
-    <div class="modal">
-      <h2 class="text-yellow-400">Welcome to Season 1!</h2>
-      <p class="text-gray-300">Sigma Vault Ascent is live. Grind daily for +10 XP, post golf swings, and climb the tiers. Exclusive wallpapers, merch, and alpha await.</p>
-      <p class="text-gray-400 text-sm mb-6">Work hard. Play hard. Flex louder.</p>
-      <button id="close-modal" class="px-8 py-4 bg-yellow-500 text-black font-bold text-lg rounded-full hover:bg-yellow-400 transition shadow-lg">
-        Dive In
-      </button>
-    </div>
-  </div>
-
   <script>
     const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
 
@@ -179,8 +163,6 @@
     let currentXP = 0;
     const XP_PER_LEVEL = 100;
     const MAX_LEVEL = 8;
-
-    // NO showWelcomeIfFirst HERE — MOVED TO AFTER LOGIN
 
     function waitForPhantom() {
       if (window.solana?.isPhantom && typeof bs58 !== 'undefined') {
@@ -220,7 +202,6 @@
             document.getElementById("dashboard").classList.remove("hidden");
             document.getElementById("wallet").textContent = pubkey.slice(0,4)+"..."+pubkey.slice(-4);
             await loadXP();
-            showWelcomeIfFirst();  // ONLY AFTER DASHBOARD
           } else {
             status.textContent = data.error || "No NFT found";
           }
@@ -249,20 +230,6 @@
         el.classList.toggle("unlocked", i + 1 <= level);
         el.classList.toggle("coming-soon", i + 1 > 4);
       });
-    }
-
-    function showWelcomeIfFirst() {
-      if (!pubkey) return;
-      const welcomeKey = `welcome_shown_${pubkey}`;
-      if (!localStorage.getItem(welcomeKey)) {
-        const modal = document.getElementById("welcome-modal");
-        modal.classList.remove("hidden");
-        const closeBtn = document.getElementById("close-modal");
-        closeBtn.onclick = () => {
-          modal.classList.add("hidden");
-          localStorage.setItem(welcomeKey, "true");
-        };
-      }
     }
 
     waitForPhantom();
