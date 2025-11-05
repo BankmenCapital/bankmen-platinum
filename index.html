@@ -12,49 +12,9 @@
       var _BASE = 58;
       var _MAP = {};
       for (var i = 0; i < _ALPHABET.length; i++) _MAP[_ALPHABET.charAt(i)] = i;
-
-      function encode(buffer) {
-        if (buffer.length === 0) return '';
-        var digits = [0];
-        for (var i = 0; i < buffer.length; ++i) {
-          for (var j = 0; j < digits.length; ++j) digits[j] <<= 8;
-          digits[0] += buffer[i];
-          var carry = 0;
-          for (var k = 0; k < digits.length; ++k) {
-            digits[k] += carry;
-            carry = digits[k] / _BASE | 0;
-            digits[k] %= _BASE;
-          }
-          while (carry) { digits.push(carry % _BASE); carry = carry / _BASE | 0; }
-        }
-        for (var i = 0; buffer[i] === 0 && i < buffer.length - 1; ++i) digits.push(0);
-        return digits.reverse().map(d => _ALPHABET[d]).join('');
-      }
-
-      function decode(string) {
-        if (string.length === 0) return new Uint8Array(0);
-        var bytes = [0];
-        for (var i = 0; i < string.length; i++) {
-          var c = string[i];
-          if (!(c in _MAP)) throw new Error('Invalid');
-          var value = _MAP[c];
-          for (var j = 0; j < bytes.length; ++j) bytes[j] *= _BASE;
-          bytes[0] += value;
-          var carry = 0;
-          for (var j = 0; j < bytes.length; ++j) {
-            bytes[j] += carry;
-            carry = bytes[j] >> 8;
-            bytes[j] &= 0xff;
-          }
-          while (carry) { bytes.push(carry & 0xff); carry >>= 8; }
-        }
-        for (var i = 0; string[i] === '1' && i < string.length - 1; ++i) bytes.push(0);
-        return new Uint8Array(bytes.reverse());
-      }
-
-      bas58.encode = encode;
-      bas58.decode = decode;
-      window.bs58 = bas58;
+      function encode(buffer) { if (buffer.length === 0) return ''; var digits = [0]; for (var i = 0; i < buffer.length; ++i) { for (var j = 0; j < digits.length; ++j) digits[j] <<= 8; digits[0] += buffer[i]; var carry = 0; for (var k = 0; k < digits.length; ++k) { digits[k] += carry; carry = digits[k] / _BASE | 0; digits[k] %= _BASE; } while (carry) { digits.push(carry % _BASE); carry = carry / _BASE | 0; } } for (var i = 0; buffer[i] === 0 && i < buffer.length - 1; ++i) digits.push(0); return digits.reverse().map(d => _ALPHABET[d]).join(''); }
+      function decode(string) { if (string.length === 0) return new Uint8Array(0); var bytes = [0]; for (var i = 0; i < string.length; i++) { var c = string[i]; if (!(c in _MAP)) throw new Error('Invalid'); var value = _MAP[c]; for (var j = 0; j < bytes.length; ++j) bytes[j] *= _BASE; bytes[0] += value; var carry = 0; for (var j = 0; j < bytes.length; ++j) { bytes[j] += carry; carry = bytes[j] >> 8; bytes[j] &= 0xff; } while (carry) { bytes.push(carry & 0xff); carry >>= 8; } } for (var i = 0; string[i] === '1' && i < string.length - 1; ++i) bytes.push(0); return new Uint8Array(bytes.reverse()); }
+      bas58.encode = encode; bas58.decode = decode; window.bs58 = bas58;
     })();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
@@ -78,10 +38,9 @@
 </head>
 <body class="h-full bg-black text-white">
 
-  <!-- FULL-SCREEN BACKGROUND -->
-  <div id="bg"><img src="season1-banner.jpg" alt="Season 1"></div>
+  <div id="bg"><img src="./assets/season1-banner.jpg" alt="Season 1"></div>
 
-  <!-- CONNECT SCREEN -->
+  <!-- CONNECT -->
   <div id="connect-section" class="h-full flex items-center justify-center">
     <div class="text-center glass p-12 rounded-2xl">
       <h1 class="text-6xl font-black text-yellow-400 mb-4">BANKMEN PLATINUM</h1>
@@ -93,80 +52,76 @@
     </div>
   </div>
 
-  <!-- WARZONE-STYLE DASHBOARD -->
+  <!-- DASHBOARD -->
   <div id="dashboard" class="hidden h-full flex flex-col">
 
-    <!-- TOP: XP BAR -->
-    <div class="glass m-4 p-4 rounded-xl flex justify-between items-center">
-      <div>
-        <div class="text-sm text-gray-400">VAULT HOLDER</div>
-        <div class="text-2xl font-bold"><span id="wallet">????</span></div>
+    <!-- ONE XP BOX: HOLDER + BAR + TOTAL -->
+    <div class="glass m-4 p-6 rounded-xl">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <div class="text-sm text-gray-400">PLATINUM HOLDER</div>
+          <div class="text-2xl font-bold"><span id="wallet">????</span></div>
+        </div>
+        <div class="text-right">
+          <div class="text-4xl font-black text-yellow-400" id="xp">0</div>
+          <div class="text-sm text-gray-400">TOTAL XP</div>
+        </div>
       </div>
-      <div class="text-right">
-        <div class="text-4xl font-black text-yellow-400" id="xp">0</div>
-        <div class="text-sm text-gray-400">TOTAL XP</div>
-      </div>
-    </div>
 
-    <!-- PROGRESS BAR -->
-    <div class="glass mx-4 mb-2 px-6 py-3 rounded-full">
-      <div class="h-6 bg-gray-800 rounded-full overflow-hidden">
+      <!-- XP BAR INSIDE THE SAME BOX -->
+      <div class="h-8 bg-gray-800 rounded-full overflow-hidden">
         <div id="xp-fill" class="xp-fill w-0"></div>
       </div>
-      <div class="flex justify-between mt-1 text-sm">
-        <span>Level <span id="level">1</span></span>
+      <div class="flex justify-between mt-2 text-sm">
+        <span class="font-bold">Level <span id="level">1</span></span>
         <span id="xp-progress">0 / 200 XP</span>
       </div>
     </div>
 
-    <!-- CENTER: NEWS + CHALLENGES -->
+    <!-- CENTER PANELS -->
     <div class="flex-1 flex gap-4 mx-4 mb-4">
-      <!-- NEWS -->
       <div class="glass w-1/3 p-6 rounded-xl">
         <h2 class="text-2xl font-bold text-yellow-400 mb-4">VAULT NEWS</h2>
         <ul class="space-y-3 text-sm">
-          <li class="glass p-3 rounded">Season 1 LIVE — Welcome to our first season of Bankmen Platinum! Complete the weekly missions and login daily to get an XP bonus.
-          The Bankmen Finance scandal has decended the city into chaos. Rise up the ranks, live the Bankmen lifestyle to unlock the secrets of the biggest rug to hit the Solana blockchain. </li>
+          <li class="glass p-3 rounded">Season 1 LIVE — Welcome to the first season of Bankmen Platinum! Complete the weekly missions and login daily to get an XP bonus.
+Unlock exclusive rewards and a higher status among your fellow Bankmen. </li>
+          <li class="glass p-3 rounded">Bankmen Aftermovie Premiers Friday!</li>
 
         </ul>
       </div>
 
-      <!-- WEEKLY CHALLENGES + DAILY BUTTON -->
       <div class="glass w-2/3 p-6 rounded-xl relative">
         <h2 class="text-2xl font-bold text-yellow-400 mb-4">WEEKLY CHALLENGES</h2>
         <div class="grid grid-cols-2 gap-4 text-sm mb-12">
-          <div class="glass p-4 rounded">Post swing on X (+200 XP)</div>
-          <div class="glass p-4 rounded">Like + RT pinned (+50 XP)</div>
-          <div class="glass p-4 rounded">Reply GM (+20 XP)</div>
+          <div class="glass p-4 rounded">Post swing (+300 XP)</div>
+          <div class="glass p-4 rounded">RT + Like (+50 XP)</div>
+          <div class="glass p-4 rounded">Follow @ example (+25 XP)</div>
           <div class="glass p-4 rounded">Attend a Bankmen Event (+500 XP)</div>
         </div>
-
-        <!-- DAILY +10 XP BUTTON — BOTTOM RIGHT -->
         <button id="daily-btn" class="absolute bottom-4 right-4 px-6 py-3 bg-yellow-500 text-black font-bold rounded-full hover:bg-yellow-400 transition shadow-lg">
           DAILY +10 XP
         </button>
       </div>
     </div>
 
-    <!-- BOTTOM: 50-LEVEL BATTLEPASS -->
+    <!-- BATTLEPASS — FAST SCROLL -->
     <div class="glass mx-4 mb-4 p-4 rounded-xl">
       <div class="flex items-center">
-        <button id="scroll-left" class="scroll-btn rounded-l-full z-10">◄</button>
+        <button id="scroll-left" class="scroll-btn rounded-l-full z-10">◄◄</button>
         <div id="levels-container" class="flex overflow-x-auto scrollbar-hide flex-1 px-4 space-x-4"></div>
-        <button id="scroll-right" class="scroll-btn rounded-r-full z-10">►</button>
+        <button id="scroll-right" class="scroll-btn rounded-r-full z-10">►►</button>
       </div>
     </div>
   </div>
 
-  <!-- PRIZES + SCRIPT -->
   <script>
-    const PRIZES = [null,"Discord “Vault Verified” role + emoji pack","Phone wallpaper #1","1× Socks Raffle",null,"Desktop wallpaper #1 (4K)",null,"1× Pen Raffle","Phone wallpaper #2",null,"OG BADGE + banner",null,"2× Socks Raffle",null,null,"PRIVATE TRADING LOUNGE",null,null,"Desktop wallpaper #2",null,"ALPHA VAULT channel",null,"3× Coffee Mug Raffle",null,null,"Phone wallpaper #3 (GIF)",null,null,"1× Polo Raffle",null,"HOLDER SPOTLIGHT on X",null,"5× Socks Raffle",null,null,"2× Quarter-Zip Raffle",null,null,"Spotify lo-fi playlist",null,"VAULT LEGEND role",null,null,null,null,"3× Polo Raffle",null,"1× Grand Watch Raffle",null,"Personalized cartoon PFP","10× GRAND WATCH + Vault Overlord"];
+    const PRIZES = [null,"Discord “Vault Verified” role","Phone wallpaper #1","1× Socks Raffle",null,"Desktop wallpaper #1 (4K)",null,"1× Pen Raffle","Phone wallpaper #2",null,"OG BADGE + banner",null,"2× Socks Raffle",null,null,"PRIVATE TRADING LOUNGE",null,null,"Desktop wallpaper #2",null,"ALPHA VAULT channel",null,"3× Coffee Mug Raffle",null,null,"Phone wallpaper #3 (GIF)",null,null,"1× Polo Raffle",null,"HOLDER SPOTLIGHT on X",null,"5× Socks Raffle",null,null,"2× Quarter-Zip Raffle",null,null,"Spotify lo-fi playlist",null,"VAULT LEGEND role",null,null,null,null,"3× Polo Raffle",null,"1× Grand Watch Raffle",null,"Personalized cartoon PFP","10× GRAND WATCH + Vault Overlord"];
     const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
     let token = null, pubkey = null, currentXP = 0;
     const XP_PER_LEVEL = 200;
     const TOTAL_LEVELS = 50;
+    const SCROLL_JUMP = 8; // ← 8 levels per click
 
-    // XP POP ANIMATION
     function showXPPop(amount) {
       const pop = document.createElement("div");
       pop.className = "xp-pop text-5xl";
@@ -177,46 +132,27 @@
       setTimeout(() => pop.remove(), 1600);
     }
 
-    // DAILY LOGIN
     function setupDailyLogin() {
       const btn = document.getElementById("daily-btn");
       const today = new Date().toDateString();
       const claimed = localStorage.getItem("daily_claimed") === today;
-
-      if (claimed) {
-        btn.textContent = "CLAIMED ✓";
-        btn.disabled = true;
-        btn.classList.replace("bg-yellow-500", "bg-gray-600");
-        btn.classList.remove("hover:bg-yellow-400");
-      }
-
+      if (claimed) { btn.textContent = "CLAIMED ✓"; btn.disabled = true; btn.classList.replace("bg-yellow-500", "bg-gray-600"); }
       btn.onclick = async () => {
         if (claimed) return;
         try {
-          const res = await fetch(`${WORKER_URL}/daily`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token })
-          });
+          const res = await fetch(`${WORKER_URL}/daily`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) });
           const data = await res.json();
           if (data.success) {
             currentXP += 10;
             updateXP();
             showXPPop(10);
             localStorage.setItem("daily_claimed", today);
-            btn.textContent = "CLAIMED ✓";
-            btn.disabled = true;
-            btn.classList.replace("bg-yellow-500", "bg-gray-600");
-          } else {
-            alert(data.error || "Already claimed today");
-          }
-        } catch (e) {
-          alert("Backend not ready yet — coming soon!");
-        }
+            btn.textContent = "CLAIMED ✓"; btn.disabled = true; btn.classList.replace("bg-yellow-500", "bg-gray-600");
+          } else alert(data.error || "Error");
+        } catch { alert("Backend loading..."); }
       };
     }
 
-    // CONNECT
     function waitForPhantom() {
       if (window.solana?.isPhantom && typeof bs58 !== 'undefined') initApp();
       else setTimeout(waitForPhantom, 100);
@@ -234,8 +170,7 @@
           const sigBase58 = bs58.encode(signature);
 
           const res = await fetch(`${WORKER_URL}/auth`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+            method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ pubkey, signature: sigBase58, message })
           });
           const data = await res.json();
@@ -266,10 +201,7 @@
       document.getElementById("xp-fill").style.width = progress + "%";
       document.getElementById("level").textContent = level;
       document.getElementById("xp-progress").textContent = `${currentXP % XP_PER_LEVEL} / ${XP_PER_LEVEL} XP`;
-
-      document.querySelectorAll(".level-tile").forEach((t, i) => {
-        t.classList.toggle("current", i + 1 === level);
-      });
+      document.querySelectorAll(".level-tile").forEach((t, i) => t.classList.toggle("current", i + 1 === level));
     }
 
     function buildBattlepass() {
@@ -286,10 +218,11 @@
         container.appendChild(tile);
       }
       const currentTile = container.children[level - 1];
-      container.scrollLeft = currentTile.offsetLeft - container.offsetWidth / 2 + currentTile.offsetWidth / 2;
+      container.scrollLeft = currentTile.offsetLeft - container.offsetWidth / 2 + 80;
 
-      document.getElementById("scroll-left").onclick = () => container.scrollBy({ left: -300, behavior: "smooth" });
-      document.getElementById("scroll-right").onclick = () => container.scrollBy({ left: 300, behavior: "smooth" });
+      const jump = SCROLL_JUMP * 160; // ~8 tiles
+      document.getElementById("scroll-left").onclick  = () => container.scrollBy({ left: -jump, behavior: "smooth" });
+      document.getElementById("scroll-right").onclick = () => container.scrollBy({ left:  jump, behavior: "smooth" });
     }
 
     waitForPhantom();
