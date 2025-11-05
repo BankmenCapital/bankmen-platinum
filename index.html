@@ -6,17 +6,62 @@
   <title>Bankmen Platinum — Season 1</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script>
-    (function () { var bas58 = {}; var _ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'; var _BASE = 58; var _MAP = {}; for (var i = 0; i < _ALPHABET.length; i++) _MAP[_ALPHABET.charAt(i)] = i;
-      function encode(buffer) { if (buffer.length === 0) return ''; var digits = [0]; for (var i = 0; i < buffer.length; ++i) { for (var j = 0; j < digits.length; ++j) digits[j] <<= 8; digits[0] += buffer[i]; var carry = 0; for (var k = 0; k < digits.length; ++k) { digits[k] += carry; carry = digits[k] / _BASE | 0; digits[k] %= _BASE; } while (carry) { digits.push(carry % _BASE); carry = carry / _BASE | 0; } } for (var i = 0; buffer[i] === 0 && i < buffer.length - 1; ++i) digits.push(0); return digits.reverse().map(d => _ALPHABET[d]).join(''); }
-      function decode(string) { if (string.length === 0) return new Uint8Array(0); var bytes = [0]; for (var i = 0; i < string.length; i++) { var c = string[i]; if (!(c in _MAP)) throw new Error('Invalid'); var value = _MAP[c]; for (var j = 0; j < bytes.length; ++j) bytes[j] *= _BASE; bytes[0] += value; var carry = 0; for (var j = 0; j < bytes.length; ++j) { bytes[j] += carry; carry = bytes[j] >> 8; bytes[j] &= 0xff; } while (carry) { bytes.push(carry & 0xff); carry >>= 8; } } for (var i = 0; string[i] === '1' && i < string.length - 1; ++i) bytes.push(0); return new Uint8Array(bytes.reverse()); }
-      bas58.encode = encode; bas58.decode = decode; window.bs58 = bas58;
+    (function () {
+      var bas58 = {};
+      var _ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+      var _BASE = 58;
+      var _MAP = {};
+      for (var i = 0; i < _ALPHABET.length; i++) _MAP[_ALPHABET.charAt(i)] = i;
+
+      function encode(buffer) {
+        if (buffer.length === 0) return '';
+        var digits = [0];
+        for (var i = 0; i < buffer.length; ++i) {
+          for (var j = 0; j < digits.length; ++j) digits[j] <<= 8;
+          digits[0] += buffer[i];
+          var carry = 0;
+          for (var k = 0; k < digits.length; ++k) {
+            digits[k] += carry;
+            carry = digits[k] / _BASE | 0;
+            digits[k] %= _BASE;
+          }
+          while (carry) { digits.push(carry % _BASE); carry = carry / _BASE | 0; }
+        }
+        for (var i = 0; buffer[i] === 0 && i < buffer.length - 1; ++i) digits.push(0);
+        return digits.reverse().map(d => _ALPHABET[d]).join('');
+      }
+
+      function decode(string) {
+        if (string.length === 0) return new Uint8Array(0);
+        var bytes = [0];
+        for (var i = 0; i < string.length; i++) {
+          var c = string[i];
+          if (!(c in _MAP)) throw new Error('Invalid');
+          var value = _MAP[c];
+          for (var j = 0; j < bytes.length; ++j) bytes[j] *= _BASE;
+          bytes[0] += value;
+          var carry = 0;
+          for (var j = 0; j < bytes.length; ++j) {
+            bytes[j] += carry;
+            carry = bytes[j] >> 8;
+            bytes[j] &= 0xff;
+          }
+          while (carry) { bytes.push(carry & 0xff); carry >>= 8; }
+        }
+        for (var i = 0; string[i] === '1' && i < string.length - 1; ++i) bytes.push(0);
+        return new Uint8Array(bytes.reverse());
+      }
+
+      bas58.encode = encode;
+      bas58.decode = decode;
+      window.bs58 = bas58;
     })();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
 
   <style>
     html, body { height: 100%; margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; }
-    #bg { position: fixed; inset: 0; z-index: -1; background: #000; }
+    #bg { position: fixed; inset: 0; z-index: -1; }
     #bg img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
     .glass { backdrop-filter: blur(12px); background: rgba(20, 20, 40, 0.45); border: 1px solid rgba(251, 191, 36, 0.3); }
     .level-tile { min-width: 140px; transition: all 0.3s; }
@@ -25,22 +70,18 @@
     .xp-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); transition: width 1.2s ease; }
     .scroll-btn { width: 48px; height: 48px; background: rgba(251, 191, 36, 0.2); border: 2px solid #fbbf24; }
     .scroll-btn:hover { background: rgba(251, 191, 36, 0.4); }
-
-    /* DAILY LOGIN BUTTON */
-    #daily-btn { animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100% { box-shadow: 0 0 20px rgba(251,191,36,0.6); } 50% { box-shadow: 0 0 30px rgba(251,191,36,1); } }
-
-    /* ANIMATED XP POP */
     .xp-pop { position: absolute; font-weight: 900; color: #fbbf24; pointer-events: none; animation: floatUp 1.5s forwards; }
     @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-80px); opacity: 0; } }
+    #daily-btn { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { box-shadow: 0 0 20px rgba(251,191,36,0.6); } 50% { box-shadow: 0 0 30px rgba(251,191,36,1); } }
   </style>
 </head>
 <body class="h-full bg-black text-white">
 
-  <!-- BACKGROUND -->
+  <!-- FULL-SCREEN BACKGROUND -->
   <div id="bg"><img src="season1-banner.jpg" alt="Season 1"></div>
 
-  <!-- CONNECT -->
+  <!-- CONNECT SCREEN -->
   <div id="connect-section" class="h-full flex items-center justify-center">
     <div class="text-center glass p-12 rounded-2xl">
       <h1 class="text-6xl font-black text-yellow-400 mb-4">BANKMEN PLATINUM</h1>
@@ -52,11 +93,11 @@
     </div>
   </div>
 
-  <!-- DASHBOARD -->
+  <!-- WARZONE-STYLE DASHBOARD -->
   <div id="dashboard" class="hidden h-full flex flex-col">
 
-    <!-- TOP XP BAR -->
-    <div class="glass m-4 p-4 rounded-xl flex justify-between items-center relative">
+    <!-- TOP: XP BAR -->
+    <div class="glass m-4 p-4 rounded-xl flex justify-between items-center">
       <div>
         <div class="text-sm text-gray-400">VAULT HOLDER</div>
         <div class="text-2xl font-bold"><span id="wallet">????</span></div>
@@ -65,15 +106,11 @@
         <div class="text-4xl font-black text-yellow-400" id="xp">0</div>
         <div class="text-sm text-gray-400">TOTAL XP</div>
       </div>
-      <!-- DAILY LOGIN BUTTON -->
-      <button id="daily-btn" class="absolute top-2 right-2 px-4 py-2 bg-yellow-500 text-black font-bold rounded-full text-xs">
-        DAILY +10 XP
-      </button>
     </div>
 
     <!-- PROGRESS BAR -->
     <div class="glass mx-4 mb-2 px-6 py-3 rounded-full">
-      <div class="h-6 bg-gray-800 rounded-full overflow-hidden relative">
+      <div class="h-6 bg-gray-800 rounded-full overflow-hidden">
         <div id="xp-fill" class="xp-fill w-0"></div>
       </div>
       <div class="flex justify-between mt-1 text-sm">
@@ -82,37 +119,46 @@
       </div>
     </div>
 
-    <!-- CENTER PANELS -->
+    <!-- CENTER: NEWS + CHALLENGES -->
     <div class="flex-1 flex gap-4 mx-4 mb-4">
+      <!-- NEWS -->
       <div class="glass w-1/3 p-6 rounded-xl">
         <h2 class="text-2xl font-bold text-yellow-400 mb-4">VAULT NEWS</h2>
         <ul class="space-y-3 text-sm">
-          <li class="glass p-3 rounded">Season 1 LIVE — Daily login active</li>
+          <li class="glass p-3 rounded">Season 1 LIVE — Daily +10 XP</li>
           <li class="glass p-3 rounded">Socks Raffle: 48h left</li>
           <li class="glass p-3 rounded">Alpha Lounge @ Lv 20</li>
         </ul>
       </div>
-      <div class="glass w-2/3 p-6 rounded-xl">
+
+      <!-- WEEKLY CHALLENGES + DAILY BUTTON -->
+      <div class="glass w-2/3 p-6 rounded-xl relative">
         <h2 class="text-2xl font-bold text-yellow-400 mb-4">WEEKLY CHALLENGES</h2>
-        <div class="grid grid-cols-2 gap-4 text-sm">
+        <div class="grid grid-cols-2 gap-4 text-sm mb-12">
           <div class="glass p-4 rounded">Post swing (+30 XP)</div>
           <div class="glass p-4 rounded">RT pinned (+20 XP)</div>
           <div class="glass p-4 rounded">Tag 3 frens (+15 XP)</div>
           <div class="glass p-4 rounded">Join VC (+25 XP)</div>
         </div>
+
+        <!-- DAILY +10 XP BUTTON — BOTTOM RIGHT -->
+        <button id="daily-btn" class="absolute bottom-4 right-4 px-6 py-3 bg-yellow-500 text-black font-bold rounded-full hover:bg-yellow-400 transition shadow-lg">
+          DAILY +10 XP
+        </button>
       </div>
     </div>
 
-    <!-- BATTLEPASS SCROLLER -->
+    <!-- BOTTOM: 50-LEVEL BATTLEPASS -->
     <div class="glass mx-4 mb-4 p-4 rounded-xl">
       <div class="flex items-center">
-        <button id="scroll-left" class="scroll-btn rounded-l-full">◄</button>
+        <button id="scroll-left" class="scroll-btn rounded-l-full z-10">◄</button>
         <div id="levels-container" class="flex overflow-x-auto scrollbar-hide flex-1 px-4 space-x-4"></div>
-        <button id="scroll-right" class="scroll-btn rounded-r-full">►</button>
+        <button id="scroll-right" class="scroll-btn rounded-r-full z-10">►</button>
       </div>
     </div>
   </div>
 
+  <!-- PRIZES + SCRIPT -->
   <script>
     const PRIZES = [null,"Discord “Vault Verified” role + emoji pack","Phone wallpaper #1","1× Socks Raffle",null,"Desktop wallpaper #1 (4K)",null,"1× Pen Raffle","Phone wallpaper #2",null,"OG BADGE + banner",null,"2× Socks Raffle",null,null,"PRIVATE TRADING LOUNGE",null,null,"Desktop wallpaper #2",null,"ALPHA VAULT channel",null,"3× Coffee Mug Raffle",null,null,"Phone wallpaper #3 (GIF)",null,null,"1× Polo Raffle",null,"HOLDER SPOTLIGHT on X",null,"5× Socks Raffle",null,null,"2× Quarter-Zip Raffle",null,null,"Spotify lo-fi playlist",null,"VAULT LEGEND role",null,null,null,null,"3× Polo Raffle",null,"1× Grand Watch Raffle",null,"Personalized cartoon PFP","10× GRAND WATCH + Vault Overlord"];
     const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
@@ -120,18 +166,18 @@
     const XP_PER_LEVEL = 200;
     const TOTAL_LEVELS = 50;
 
-    // ====== XP POP ANIMATION ======
+    // XP POP ANIMATION
     function showXPPop(amount) {
       const pop = document.createElement("div");
-      pop.className = "xp-pop text-4xl";
+      pop.className = "xp-pop text-5xl";
       pop.textContent = `+${amount} XP`;
-      pop.style.left = `${Math.random() * 60 + 20}%`;
-      pop.style.top = "20%";
+      pop.style.left = `${Math.random() * 50 + 25}%`;
+      pop.style.top = "30%";
       document.getElementById("dashboard").appendChild(pop);
       setTimeout(() => pop.remove(), 1600);
     }
 
-    // ====== DAILY LOGIN (+10 XP) ======
+    // DAILY LOGIN
     function setupDailyLogin() {
       const btn = document.getElementById("daily-btn");
       const today = new Date().toDateString();
@@ -140,32 +186,37 @@
       if (claimed) {
         btn.textContent = "CLAIMED ✓";
         btn.disabled = true;
-        btn.classList.remove("bg-yellow-500", "hover:bg-yellow-400");
-        btn.classList.add("bg-gray-600");
+        btn.classList.replace("bg-yellow-500", "bg-gray-600");
+        btn.classList.remove("hover:bg-yellow-400");
       }
 
       btn.onclick = async () => {
         if (claimed) return;
-        const res = await fetch(`${WORKER_URL}/daily`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token })
-        });
-        const data = await res.json();
-        if (data.success) {
-          currentXP += 10;
-          updateXP();
-          showXPPop(10);
-          localStorage.setItem("daily_claimed", today);
-          btn.textContent = "CLAIMED ✓";
-          btn.disabled = true;
-          btn.classList.remove("bg-yellow-500");
-          btn.classList.add("bg-gray-600");
+        try {
+          const res = await fetch(`${WORKER_URL}/daily`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token })
+          });
+          const data = await res.json();
+          if (data.success) {
+            currentXP += 10;
+            updateXP();
+            showXPPop(10);
+            localStorage.setItem("daily_claimed", today);
+            btn.textContent = "CLAIMED ✓";
+            btn.disabled = true;
+            btn.classList.replace("bg-yellow-500", "bg-gray-600");
+          } else {
+            alert(data.error || "Already claimed today");
+          }
+        } catch (e) {
+          alert("Backend not ready yet — coming soon!");
         }
       };
     }
 
-    // ====== CONNECT & LOAD ======
+    // CONNECT
     function waitForPhantom() {
       if (window.solana?.isPhantom && typeof bs58 !== 'undefined') initApp();
       else setTimeout(waitForPhantom, 100);
@@ -183,7 +234,8 @@
           const sigBase58 = bs58.encode(signature);
 
           const res = await fetch(`${WORKER_URL}/auth`, {
-            method: "POST", headers: { "Content-Type": "application/json" },
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ pubkey, signature: sigBase58, message })
           });
           const data = await res.json();
@@ -215,7 +267,6 @@
       document.getElementById("level").textContent = level;
       document.getElementById("xp-progress").textContent = `${currentXP % XP_PER_LEVEL} / ${XP_PER_LEVEL} XP`;
 
-      // Re-highlight current level
       document.querySelectorAll(".level-tile").forEach((t, i) => {
         t.classList.toggle("current", i + 1 === level);
       });
@@ -234,7 +285,9 @@
         `;
         container.appendChild(tile);
       }
-      container.scrollLeft = container.children[level - 1].offsetLeft - container.offsetWidth / 2 + 70;
+      const currentTile = container.children[level - 1];
+      container.scrollLeft = currentTile.offsetLeft - container.offsetWidth / 2 + currentTile.offsetWidth / 2;
+
       document.getElementById("scroll-left").onclick = () => container.scrollBy({ left: -300, behavior: "smooth" });
       document.getElementById("scroll-right").onclick = () => container.scrollBy({ left: 300, behavior: "smooth" });
     }
