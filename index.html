@@ -210,11 +210,12 @@ Unlock exclusive rewards and a higher status among your fellow Bankmen. </li>
       for (let i = 1; i <= TOTAL_LEVELS; i++) {
         const tile = document.createElement("div");
         tile.className = `level-tile glass p-4 rounded-xl text-center border-2 ${i <= level ? 'unlocked border-yellow-400' : 'border-gray-700'} ${i === level ? 'current' : ''}`;
-        tile.innerHTML = `
-          <div class="text-2xl font-black text-yellow-400">Lv ${i}</div>
-          <div class="text-xs mt-1 opacity-80">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
-          <div class="text-xs mt-2 leading-tight">${PRIZES[i] || ""}</div>
-        `;
+tile.innerHTML = `
+  <div class="text-2xl font-black text-yellow-400">Lv ${i}</div>
+  ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-16 h-16 mx-auto my-2 object-contain drop-shadow-lg">` : ''}
+  <div class="text-xs mt-1 opacity-80">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
+  <div class="text-xs mt-2 leading-tight">${PRIZES[i] || ""}</div>
+`;
         container.appendChild(tile);
       }
       const currentTile = container.children[level - 1];
