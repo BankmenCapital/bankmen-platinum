@@ -1,204 +1,191 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bankmen Platinum — Battlepass</title>
-
-  <!-- TAILWIND -->
+  <title>Bankmen Platinum — Season 1</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-
-  <!-- EMBEDDED BS58 -->
   <script>
-    (function () {
-      var bas58 = {};
-
-      var _ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-      var _BASE = 58;
-      var _MAP = {};
-      for (var i = 0; i < _ALPHABET.length; i++) {
-        _MAP[_ALPHABET.charAt(i)] = i;
-      }
-
-      function encode(buffer) {
-        if (buffer.length === 0) return '';
-        var digits = [0];
-        for (var i = 0; i < buffer.length; ++i) {
-          for (var j = 0; j < digits.length; ++j) {
-            digits[j] <<= 8;
-          }
-          digits[0] += buffer[i];
-          var carry = 0;
-          for (var k = 0; k < digits.length; ++k) {
-            digits[k] += carry;
-            carry = digits[k] / _BASE | 0;
-            digits[k] %= _BASE;
-          }
-          while (carry) {
-            digits.push(carry % _BASE);
-            carry = carry / _BASE | 0;
-          }
-        }
-        for (var i = 0; buffer[i] === 0 && i < buffer.length - 1; ++i) {
-          digits.push(0);
-        }
-        return digits.reverse().map(function (digit) { return _ALPHABET[digit]; }).join('');
-      }
-
-      function decode(string) {
-        if (string.length === 0) return new Uint8Array(0);
-        var bytes = [0];
-        for (var i = 0; i < string.length; i++) {
-          var c = string[i];
-          if (!(c in _MAP)) throw new Error('Invalid character');
-          var value = _MAP[c];
-          for (var j = 0; j < bytes.length; ++j) {
-            bytes[j] *= _BASE;
-          }
-          bytes[0] += value;
-          var carry = 0;
-          for (var j = 0; j < bytes.length; ++j) {
-            bytes[j] += carry;
-            carry = bytes[j] >> 8;
-            bytes[j] &= 0xff;
-          }
-          while (carry) {
-            bytes.push(carry & 0xff);
-            carry >>= 8;
-          }
-        }
-        for (var i = 0; string[i] === '1' && i < string.length - 1; ++i) {
-          bytes.push(0);
-        }
-        return new Uint8Array(bytes.reverse());
-      }
-
-      bas58.encode = encode;
-      bas58.decode = decode;
-      window.bs58 = bas58;
+    (function () { var bas58 = {}; var _ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'; var _BASE = 58; var _MAP = {}; for (var i = 0; i < _ALPHABET.length; i++) _MAP[_ALPHABET.charAt(i)] = i;
+      function encode(buffer) { if (buffer.length === 0) return ''; var digits = [0]; for (var i = 0; i < buffer.length; ++i) { for (var j = 0; j < digits.length; ++j) digits[j] <<= 8; digits[0] += buffer[i]; var carry = 0; for (var k = 0; k < digits.length; ++k) { digits[k] += carry; carry = digits[k] / _BASE | 0; digits[k] %= _BASE; } while (carry) { digits.push(carry % _BASE); carry = carry / _BASE | 0; } } for (var i = 0; buffer[i] === 0 && i < buffer.length - 1; ++i) digits.push(0); return digits.reverse().map(d => _ALPHABET[d]).join(''); }
+      function decode(string) { if (string.length === 0) return new Uint8Array(0); var bytes = [0]; for (var i = 0; i < string.length; i++) { var c = string[i]; if (!(c in _MAP)) throw new Error('Invalid'); var value = _MAP[c]; for (var j = 0; j < bytes.length; ++j) bytes[j] *= _BASE; bytes[0] += value; var carry = 0; for (var j = 0; j < bytes.length; ++j) { bytes[j] += carry; carry = bytes[j] >> 8; bytes[j] &= 0xff; } while (carry) { bytes.push(carry & 0xff); carry >>= 8; } } for (var i = 0; string[i] === '1' && i < string.length - 1; ++i) bytes.push(0); return new Uint8Array(bytes.reverse()); }
+      bas58.encode = encode; bas58.decode = decode; window.bs58 = bas58;
     })();
   </script>
-
-  <!-- TWEETNACL -->
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
 
   <style>
-    body { background: #0a0a14; color: #e5e7eb; font-family: 'Inter', sans-serif; margin: 0; padding: 2rem; }
-    .battlepass { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 16px; padding: 1.5rem; }
-    .level { background: #111827; border: 1px solid #374151; border-radius: 12px; padding: 1rem; text-align: center; opacity: 0.4; filter: grayscale(100%); position: relative; }
-    .level.unlocked { opacity: 1; filter: none; border-color: #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.3); animation: pulse 2s infinite; }
-    .level.coming-soon::after { content: "Coming Soon"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.8rem; color: #9ca3af; }
-    @keyframes pulse { 0%, 100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.3); } 50% { box-shadow: 0 0 30px rgba(251, 191, 36, 0.6); } }
-    .xp-bar { height: 12px; background: #1f2937; border-radius: 6px; overflow: hidden; margin: 1rem 0; }
-    .xp-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); width: 0%; transition: width 1s ease; }
-    .hidden { display: none; }
+    html, body { height: 100%; margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; }
+    #bg { position: fixed; inset: 0; z-index: -1; background: #000; }
+    #bg img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
+    .glass { backdrop-filter: blur(12px); background: rgba(20, 20, 40, 0.45); border: 1px solid rgba(251, 191, 36, 0.3); }
+    .level-tile { min-width: 140px; transition: all 0.3s; }
+    .level-tile.unlocked { border-color: #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+    .level-tile.current { transform: scale(1.15); z-index: 10; }
+    .xp-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); transition: width 1.2s ease; }
+    .scroll-btn { width: 48px; height: 48px; background: rgba(251, 191, 36, 0.2); border: 2px solid #fbbf24; }
+    .scroll-btn:hover { background: rgba(251, 191, 36, 0.4); }
+
+    /* DAILY LOGIN BUTTON */
+    #daily-btn { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { box-shadow: 0 0 20px rgba(251,191,36,0.6); } 50% { box-shadow: 0 0 30px rgba(251,191,36,1); } }
+
+    /* ANIMATED XP POP */
+    .xp-pop { position: absolute; font-weight: 900; color: #fbbf24; pointer-events: none; animation: floatUp 1.5s forwards; }
+    @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-80px); opacity: 0; } }
   </style>
 </head>
-<body class="flex flex-col items-center min-h-screen">
+<body class="h-full bg-black text-white">
 
-  <div id="connect-section" class="text-center max-w-lg">
-    <h1 class="text-5xl font-bold mb-2 text-yellow-400">BANKMEN PLATINUM</h1>
-    <p class="text-gray-400 mb-8">Post golf. Earn XP. Unlock glory.</p>
-    <button id="connect-btn" class="px-8 py-4 bg-yellow-500 text-black font-bold text-lg rounded-full hover:bg-yellow-400 transition shadow-lg">
-      Connect Phantom Wallet
-    </button>
-    <p id="status" class="mt-6 text-sm text-red-400 min-h-[1.5em]"></p>
+  <!-- BACKGROUND -->
+  <div id="bg"><img src="season1-banner.jpg" alt="Season 1"></div>
+
+  <!-- CONNECT -->
+  <div id="connect-section" class="h-full flex items-center justify-center">
+    <div class="text-center glass p-12 rounded-2xl">
+      <h1 class="text-6xl font-black text-yellow-400 mb-4">BANKMEN PLATINUM</h1>
+      <p class="text-2xl text-gray-300 mb-8">Season 1: Sigma Vault Ascent</p>
+      <button id="connect-btn" class="px-10 py-5 bg-yellow-500 text-black font-bold text-2xl rounded-full hover:bg-yellow-400 shadow-2xl">
+        CONNECT PHANTOM
+      </button>
+      <p id="status" class="mt-6 text-red-400 text-lg"></p>
+    </div>
   </div>
 
-  <div id="dashboard" class="hidden w-full max-w-5xl mt-10">
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="hidden h-full flex flex-col">
 
-    <!-- SEASON BANNER -->
-    <div class="mt-10 text-center">
-      <h3 class="text-2xl font-bold mb-4 text-yellow-400">Season 1: Sigma Vault Ascent</h3>
-      <div class="relative max-w-4xl mx-auto">
-        <img src="season1-banner.jpg" alt="Season 1 Wallpaper" class="w-full rounded-xl shadow-2xl border-4 border-yellow-600">
+    <!-- TOP XP BAR -->
+    <div class="glass m-4 p-4 rounded-xl flex justify-between items-center relative">
+      <div>
+        <div class="text-sm text-gray-400">VAULT HOLDER</div>
+        <div class="text-2xl font-bold"><span id="wallet">????</span></div>
+      </div>
+      <div class="text-right">
+        <div class="text-4xl font-black text-yellow-400" id="xp">0</div>
+        <div class="text-sm text-gray-400">TOTAL XP</div>
+      </div>
+      <!-- DAILY LOGIN BUTTON -->
+      <button id="daily-btn" class="absolute top-2 right-2 px-4 py-2 bg-yellow-500 text-black font-bold rounded-full text-xs">
+        DAILY +10 XP
+      </button>
+    </div>
+
+    <!-- PROGRESS BAR -->
+    <div class="glass mx-4 mb-2 px-6 py-3 rounded-full">
+      <div class="h-6 bg-gray-800 rounded-full overflow-hidden relative">
+        <div id="xp-fill" class="xp-fill w-0"></div>
+      </div>
+      <div class="flex justify-between mt-1 text-sm">
+        <span>Level <span id="level">1</span></span>
+        <span id="xp-progress">0 / 200 XP</span>
       </div>
     </div>
 
-    <!-- WELCOME MESSAGE AS STATIC TEXT -->
-    <div class="mt-12 max-w-4xl mx-auto text-center bg-gradient-to-r from-yellow-900/20 to-yellow-700/20 border-2 border-yellow-600 rounded-xl p-8 shadow-2xl">
-      <h2 class="text-4xl font-bold text-yellow-400 mb-4">Welcome to Season 1!</h2>
-      <p class="text-xl text-gray-300 mb-4">Season 1 is live. Grind daily for +10 XP, post golf swings, and climb the tiers.</p>
-      <p class="text-lg text-gray-400">Exclusive wallpapers, merch, and alpha await. Work hard. Play hard. Flex louder.</p>
-    </div>
-
-    <!-- XP BAR + WELCOME HEADER MOVED HERE (ABOVE BATTLEPASS) -->
-    <div class="mt-12 max-w-4xl mx-auto bg-gradient-to-b from-gray-900 to-gray-800 rounded-xl p-8 shadow-2xl border border-yellow-600">
-      <div class="flex justify-between items-center mb-6">
-        <div>
-          <h2 class="text-3xl font-bold">Welcome, <span id="wallet">...</span>!</h2>
-          <p class="text-gray-400">Your NFT is verified.</p>
+    <!-- CENTER PANELS -->
+    <div class="flex-1 flex gap-4 mx-4 mb-4">
+      <div class="glass w-1/3 p-6 rounded-xl">
+        <h2 class="text-2xl font-bold text-yellow-400 mb-4">VAULT NEWS</h2>
+        <ul class="space-y-3 text-sm">
+          <li class="glass p-3 rounded">Season 1 LIVE — Daily login active</li>
+          <li class="glass p-3 rounded">Socks Raffle: 48h left</li>
+          <li class="glass p-3 rounded">Alpha Lounge @ Lv 20</li>
+        </ul>
+      </div>
+      <div class="glass w-2/3 p-6 rounded-xl">
+        <h2 class="text-2xl font-bold text-yellow-400 mb-4">WEEKLY CHALLENGES</h2>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div class="glass p-4 rounded">Post swing (+30 XP)</div>
+          <div class="glass p-4 rounded">RT pinned (+20 XP)</div>
+          <div class="glass p-4 rounded">Tag 3 frens (+15 XP)</div>
+          <div class="glass p-4 rounded">Join VC (+25 XP)</div>
         </div>
-        <div class="text-right">
-          <div class="text-4xl font-bold text-yellow-400" id="xp">0</div>
-          <p class="text-sm text-gray-400">Total XP</p>
-        </div>
-      </div>
-
-      <div class="xp-bar"><div class="xp-fill" id="xp-fill"></div></div>
-      <p class="text-sm text-gray-400 text-right mt-2" id="xp-progress">Level <span id="level">1</span> — 0 / 100 XP</p>
-    </div>
-
-    <!-- BATTLEPASS LEVELS -->
-    <div class="mt-12 battlepass">
-      <h3 class="text-2xl font-bold mb-6 text-yellow-400">Battlepass — Season 1: Golf & Glory</h3>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        <div class="level unlocked"><strong>Level 1</strong><br><small>Verified Holder</small></div>
-        <div class="level"><strong>Level 2</strong><br><small>Post Golf Video</small></div>
-        <div class="level"><strong>Level 3</strong><br><small>RT Bankmen Tweet</small></div>
-        <div class="level"><strong>Level 4</strong><br><small>Sticker Pack</small></div>
-        <div class="level coming-soon"><strong>Level 5</strong><br><small>Merch Drop</small></div>
-        <div class="level coming-soon"><strong>Level 6</strong><br><small>Exclusive NFT</small></div>
-        <div class="level coming-soon"><strong>Level 7</strong><br><small>Art Upgrade</small></div>
-        <div class="level coming-soon"><strong>Level 8</strong><br><small>Alpha Access</small></div>
       </div>
     </div>
 
-    <a href="https://bankmencapital.com" class="mt-8 px-6 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition">
-      Back to Home
-    </a>
+    <!-- BATTLEPASS SCROLLER -->
+    <div class="glass mx-4 mb-4 p-4 rounded-xl">
+      <div class="flex items-center">
+        <button id="scroll-left" class="scroll-btn rounded-l-full">◄</button>
+        <div id="levels-container" class="flex overflow-x-auto scrollbar-hide flex-1 px-4 space-x-4"></div>
+        <button id="scroll-right" class="scroll-btn rounded-r-full">►</button>
+      </div>
+    </div>
   </div>
 
   <script>
+    const PRIZES = [null,"Discord “Vault Verified” role + emoji pack","Phone wallpaper #1","1× Socks Raffle",null,"Desktop wallpaper #1 (4K)",null,"1× Pen Raffle","Phone wallpaper #2",null,"OG BADGE + banner",null,"2× Socks Raffle",null,null,"PRIVATE TRADING LOUNGE",null,null,"Desktop wallpaper #2",null,"ALPHA VAULT channel",null,"3× Coffee Mug Raffle",null,null,"Phone wallpaper #3 (GIF)",null,null,"1× Polo Raffle",null,"HOLDER SPOTLIGHT on X",null,"5× Socks Raffle",null,null,"2× Quarter-Zip Raffle",null,null,"Spotify lo-fi playlist",null,"VAULT LEGEND role",null,null,null,null,"3× Polo Raffle",null,"1× Grand Watch Raffle",null,"Personalized cartoon PFP","10× GRAND WATCH + Vault Overlord"];
     const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
+    let token = null, pubkey = null, currentXP = 0;
+    const XP_PER_LEVEL = 200;
+    const TOTAL_LEVELS = 50;
 
-    let token = null;
-    let pubkey = null;
-    let currentXP = 0;
-    const XP_PER_LEVEL = 100;
-    const MAX_LEVEL = 8;
-
-    function waitForPhantom() {
-      if (window.solana?.isPhantom && typeof bs58 !== 'undefined') {
-        initApp();
-      } else {
-        setTimeout(waitForPhantom, 100);
-      }
+    // ====== XP POP ANIMATION ======
+    function showXPPop(amount) {
+      const pop = document.createElement("div");
+      pop.className = "xp-pop text-4xl";
+      pop.textContent = `+${amount} XP`;
+      pop.style.left = `${Math.random() * 60 + 20}%`;
+      pop.style.top = "20%";
+      document.getElementById("dashboard").appendChild(pop);
+      setTimeout(() => pop.remove(), 1600);
     }
 
-    function initApp() {
-      const btn = document.getElementById("connect-btn");
-      const status = document.getElementById("status");
+    // ====== DAILY LOGIN (+10 XP) ======
+    function setupDailyLogin() {
+      const btn = document.getElementById("daily-btn");
+      const today = new Date().toDateString();
+      const claimed = localStorage.getItem("daily_claimed") === today;
+
+      if (claimed) {
+        btn.textContent = "CLAIMED ✓";
+        btn.disabled = true;
+        btn.classList.remove("bg-yellow-500", "hover:bg-yellow-400");
+        btn.classList.add("bg-gray-600");
+      }
 
       btn.onclick = async () => {
+        if (claimed) return;
+        const res = await fetch(`${WORKER_URL}/daily`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token })
+        });
+        const data = await res.json();
+        if (data.success) {
+          currentXP += 10;
+          updateXP();
+          showXPPop(10);
+          localStorage.setItem("daily_claimed", today);
+          btn.textContent = "CLAIMED ✓";
+          btn.disabled = true;
+          btn.classList.remove("bg-yellow-500");
+          btn.classList.add("bg-gray-600");
+        }
+      };
+    }
+
+    // ====== CONNECT & LOAD ======
+    function waitForPhantom() {
+      if (window.solana?.isPhantom && typeof bs58 !== 'undefined') initApp();
+      else setTimeout(waitForPhantom, 100);
+    }
+
+    async function initApp() {
+      document.getElementById("connect-btn").onclick = async () => {
         try {
-          status.textContent = "Opening Phantom...";
+          document.getElementById("status").textContent = "Opening Phantom...";
           const resp = await window.solana.connect();
           pubkey = resp.publicKey.toBase58();
-          status.textContent = "Signing message...";
-
           const message = `Bankmen Platinum - ${Date.now()}`;
           const encoded = new TextEncoder().encode(message);
-          const result = await window.solana.signMessage(encoded, "utf8");
-          const sigBase58 = bs58.encode(result.signature);
+          const { signature } = await window.solana.signMessage(encoded, "utf8");
+          const sigBase58 = bs58.encode(signature);
 
-          status.textContent = "Verifying NFT...";
           const res = await fetch(`${WORKER_URL}/auth`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+            method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ pubkey, signature: sigBase58, message })
           });
-
           const data = await res.json();
           if (data.token) {
             token = data.token;
@@ -206,12 +193,10 @@
             document.getElementById("dashboard").classList.remove("hidden");
             document.getElementById("wallet").textContent = pubkey.slice(0,4)+"..."+pubkey.slice(-4);
             await loadXP();
-          } else {
-            status.textContent = data.error || "No NFT found";
-          }
-        } catch (err) {
-          status.textContent = "Error: " + err.message;
-        }
+            setupDailyLogin();
+            buildBattlepass();
+          } else document.getElementById("status").textContent = data.error || "No NFT";
+        } catch (e) { document.getElementById("status").textContent = e.message; }
       };
     }
 
@@ -223,17 +208,35 @@
     }
 
     function updateXP() {
-      const level = Math.min(Math.floor(currentXP / XP_PER_LEVEL) + 1, MAX_LEVEL);
+      const level = Math.min(Math.floor(currentXP / XP_PER_LEVEL) + 1, TOTAL_LEVELS);
       const progress = (currentXP % XP_PER_LEVEL) / XP_PER_LEVEL * 100;
-      document.getElementById("xp").textContent = currentXP;
+      document.getElementById("xp").textContent = currentXP.toLocaleString();
       document.getElementById("xp-fill").style.width = progress + "%";
       document.getElementById("level").textContent = level;
-      document.getElementById("xp-progress").textContent = `Level ${level} — ${currentXP % XP_PER_LEVEL} / ${XP_PER_LEVEL} XP`;
+      document.getElementById("xp-progress").textContent = `${currentXP % XP_PER_LEVEL} / ${XP_PER_LEVEL} XP`;
 
-      document.querySelectorAll(".level").forEach((el, i) => {
-        el.classList.toggle("unlocked", i + 1 <= level);
-        el.classList.toggle("coming-soon", i + 1 > 4);
+      // Re-highlight current level
+      document.querySelectorAll(".level-tile").forEach((t, i) => {
+        t.classList.toggle("current", i + 1 === level);
       });
+    }
+
+    function buildBattlepass() {
+      const container = document.getElementById("levels-container");
+      const level = Math.floor(currentXP / XP_PER_LEVEL) + 1;
+      for (let i = 1; i <= TOTAL_LEVELS; i++) {
+        const tile = document.createElement("div");
+        tile.className = `level-tile glass p-4 rounded-xl text-center border-2 ${i <= level ? 'unlocked border-yellow-400' : 'border-gray-700'} ${i === level ? 'current' : ''}`;
+        tile.innerHTML = `
+          <div class="text-2xl font-black text-yellow-400">Lv ${i}</div>
+          <div class="text-xs mt-1 opacity-80">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
+          <div class="text-xs mt-2 leading-tight">${PRIZES[i] || ""}</div>
+        `;
+        container.appendChild(tile);
+      }
+      container.scrollLeft = container.children[level - 1].offsetLeft - container.offsetWidth / 2 + 70;
+      document.getElementById("scroll-left").onclick = () => container.scrollBy({ left: -300, behavior: "smooth" });
+      document.getElementById("scroll-right").onclick = () => container.scrollBy({ left: 300, behavior: "smooth" });
     }
 
     waitForPhantom();
