@@ -24,9 +24,9 @@
     #bg { position: fixed; inset: 0; z-index: -1; }
     #bg img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
     .glass { backdrop-filter: blur(12px); background: rgba(20, 20, 40, 0.45); border: 1px solid rgba(251, 191, 36, 0.3); }
-    .level-tile { min-width: 140px; transition: all 0.3s; }
+    .level-tile { min-width: 128px; max-height: 180px; transition: all 0.3s; }
     .level-tile.unlocked { border-color: #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
-    .level-tile.current { transform: scale(1.15); z-index: 10; }
+    .level-tile.current { transform: scale(1.08); z-index: 10; }
     .xp-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); transition: width 1.2s ease; }
     .scroll-btn { width: 48px; height: 48px; background: rgba(251, 191, 36, 0.2); border: 2px solid #fbbf24; }
     .scroll-btn:hover { background: rgba(251, 191, 36, 0.4); }
@@ -34,6 +34,35 @@
     @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-80px); opacity: 0; } }
     #daily-btn { animation: pulse 2s infinite; }
     @keyframes pulse { 0%,100% { box-shadow: 0 0 20px rgba(251,191,36,0.6); } 50% { box-shadow: 0 0 30px rgba(251,191,36,1); } }
+
+    /* MODAL */
+    #image-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    #modal-img {
+      max-width: 100%;
+      max-height: 100%;
+      border: 3px solid #fbbf24;
+      border-radius: 12px;
+      box-shadow: 0 0 40px rgba(251, 191, 36, 0.6);
+    }
+    #close-modal {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      font-size: 2rem;
+      color: #fbbf24;
+      cursor: pointer;
+      font-weight: bold;
+      text-shadow: 0 0 10px #000;
+    }
+    #close-modal:hover { transform: scale(1.1); }
   </style>
 </head>
 <body class="h-full bg-black text-white">
@@ -118,6 +147,12 @@
     </div>
   </div>
 
+  <!-- IMAGE MODAL -->
+  <div id="image-modal">
+    <span id="close-modal">×</span>
+    <img id="modal-img" src="" alt="Reward">
+  </div>
+
   <script>
     const PRIZES = [null,"Discord “Vault Verified” role","Phone wallpaper #1","1× Socks Raffle",null,"Desktop wallpaper #1 (4K)",null,"1× Pen Raffle","Phone wallpaper #2",null,"OG BADGE + banner",null,"2× Socks Raffle",null,null,"PRIVATE TRADING LOUNGE",null,null,"Desktop wallpaper #2",null,"ALPHA VAULT channel",null,"3× Coffee Mug Raffle",null,null,"Phone wallpaper #3 (GIF)",null,null,"1× Polo Raffle",null,"HOLDER SPOTLIGHT on X",null,"5× Socks Raffle",null,null,"2× Quarter-Zip Raffle",null,null,"Spotify lo-fi playlist",null,"VAULT LEGEND role",null,null,null,null,"3× Polo Raffle",null,"1× Grand Watch Raffle",null,"Personalized cartoon PFP","10× GRAND WATCH + Vault Overlord"];
     const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
@@ -161,8 +196,6 @@
     function setupDevButton() {
       const btn = document.getElementById("dev-xp-btn");
       if (!btn) return;
-
-      // DEV BUTTON ALWAYS VISIBLE (pre-launch)
       btn.onclick = async () => {
         try {
           const res = await fetch(`${WORKER_URL}/dev-xp`, {
@@ -183,15 +216,24 @@
       };
     }
 
+    // MODAL LOGIC
+    const modal = document.getElementById("image-modal");
+    const modalImg = document.getElementById("modal-img");
+    const closeModal = document.getElementById("close-modal");
+
     function viewReward(level) {
       const prize = PRIZES[level];
       if (prize && prize.includes("wallpaper")) {
         const viewImage = level === 2 ? `lv2-view.png` : `lv${level}.png`;
-        window.open(`./assets/rewards/${viewImage}`, "_blank");
+        modalImg.src = `./assets/rewards/${viewImage}`;
+        modal.style.display = "flex";
       } else {
         alert(`Level ${level}: ${prize || "Coming soon"}\n(Feature in development)`);
       }
     }
+
+    closeModal.onclick = () => modal.style.display = "none";
+    modal.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
 
     // DISCORD OAUTH CLAIM
     async function claimDiscordRole() {
@@ -284,10 +326,10 @@
         } else {
           tile.innerHTML = `
             <div class="text-2xl font-black ${isUnlocked ? 'text-yellow-400' : 'text-gray-600'}">Lv ${i}</div>
-            ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-16 h-16 mx-auto my-2 object-contain drop-shadow-lg">` : ''}
+            ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-14 h-14 mx-auto my-1 object-contain drop-shadow-lg">` : ''}
             <div class="text-xs mt-1 opacity-80">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
-            <div class="text-xs mt-2 leading-tight">${PRIZES[i] || ""}</div>
-            ${showView ? `<button onclick="viewReward(${i})" class="mt-3 px-4 py-1 bg-cyan-500 text-black text-xs font-bold rounded hover:bg-cyan-400">VIEW</button>` : ''}
+            <div class="text-xs mt-1 leading-tight text-gray-300">${PRIZES[i] || ""}</div>
+            ${showView ? `<button onclick="viewReward(${i})" class="mt-2 px-5 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-xs font-bold rounded-full hover:from-cyan-400 hover:to-blue-500 shadow-lg transform hover:scale-105 transition">VIEW</button>` : ''}
           `;
         }
         container.appendChild(tile);
