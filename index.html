@@ -112,7 +112,7 @@
     <div class="glass mx-4 mb-4 p-4 rounded-xl">
       <div class="flex items-center">
         <button id="scroll-left" class="scroll-btn rounded-l-full z-10">◄◄</button>
-        <div id="levels-container" class="flex overflow-x Reverse flex-1 px-4 space-x-4"></div>
+        <div id="levels-container" class="flex overflow-x-auto scrollbar-hide flex-1 px-4 space-x-4"></div>
         <button id="scroll-right" class="scroll-btn rounded-r-full z-10">►►</button>
       </div>
     </div>
@@ -188,7 +188,8 @@
     function viewReward(level) {
       const prize = PRIZES[level];
       if (prize && prize.includes("wallpaper")) {
-        window.open(`./assets/rewards/lv${level}.png`, "_blank");
+        const viewImage = level === 2 ? `lv2-view.png` : `lv${level}.png`;
+        window.open(`./assets/rewards/${viewImage}`, "_blank");
       } else {
         alert(`Level ${level}: ${prize || "Coming soon"}\n(Feature in development)`);
       }
