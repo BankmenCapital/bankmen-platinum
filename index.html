@@ -56,10 +56,13 @@
     .level-tile.current { box-shadow: 0 0 24px rgba(251, 191, 36, 0.7); }
 
     .xp-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); transition: width 1.2s ease; }
-    .scroll-btn { 
-      width: 48px; height: 48px; 
-      background: rgba(251, 191, 36, 0.2); 
-      border: 2px solid #fbbf24; 
+    
+    /* ARROW BUTTONS — PURE SYMBOLS */
+    .scroll-btn {
+      width: 48px;
+      height: 48px;
+      background: rgba(251, 191, 36, 0.2);
+      border: 2px solid #fbbf24;
       font-size: 1.8rem;
       line-height: 1;
       display: flex;
@@ -67,8 +70,11 @@
       justify-content: center;
       color: #fbbf24;
       font-weight: bold;
+      user-select: none;
     }
-    .scroll-btn:hover { background: rgba(251, 191, 36, 0.4); }
+    .scroll-btn:hover {
+      background: rgba(251, 191, 36, 0.4);
+    }
 
     .xp-pop { position: absolute; font-weight: 900; color: #fbbf24; pointer-events: none; animation: floatUp 1.5s forwards; }
     @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-80px); opacity: 0; } }
