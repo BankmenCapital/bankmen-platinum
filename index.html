@@ -33,7 +33,7 @@
       align-items: center;
       height: 180px;
       padding: 0 1rem;
-      gap: 12px; /* CLEAN SPACING */
+      gap: 12px;
     }
 
     .level-tile {
@@ -53,8 +53,6 @@
     }
     .level-tile.unlocked { border-color: #fbbf24; box-shadow: 0 0 16px rgba(251, 191, 36, 0.4); }
     .level-tile.locked { border-color: #374151; }
-
-    /* CURRENT LEVEL — GLOW ONLY */
     .level-tile.current { box-shadow: 0 0 24px rgba(251, 191, 36, 0.7); }
 
     .xp-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); transition: width 1.2s ease; }
@@ -66,6 +64,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      color: #fbbf24;
+      font-weight: bold;
     }
     .scroll-btn:hover { background: rgba(251, 191, 36, 0.4); }
 
