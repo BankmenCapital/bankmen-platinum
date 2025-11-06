@@ -24,7 +24,7 @@
     #bg { position: fixed; inset: 0; z-index: -1; }
     #bg img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
     .glass { backdrop-filter: blur(12px); background: rgba(20, 20, 40, 0.45); border: 1px solid rgba(251, 191, 36, 0.3); }
-    .level-tile { min-width: 128px; max-height: 180px; transition: all 0.3s; }
+    .level-tile { min-width: 128px; max-height: 180px; transition: all 0.3s; position: relative; }
     .level-tile.unlocked { border-color: #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
     .level-tile.current { transform: scale(1.08); z-index: 10; }
     .xp-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); transition: width 1.2s ease; }
@@ -63,6 +63,31 @@
       text-shadow: 0 0 10px #000;
     }
     #close-modal:hover { transform: scale(1.1); }
+
+    /* OVERLAY BUTTONS */
+    .overlay-btn {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 12px;
+      font-size: 10px;
+      font-weight: bold;
+      border-radius: 9999px;
+      opacity: 0;
+      transition: all 0.2s ease;
+      pointer-events: none;
+      z-index: 20;
+    }
+    .level-tile:hover .overlay-btn,
+    .level-tile.current .overlay-btn {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .overlay-btn.discord { background: #5865F2; color: white; }
+    .overlay-btn.discord:hover { background: #4752C4; transform: translateX(-50%) scale(1.05); }
+    .overlay-btn.view { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; }
+    .overlay-btn.view:hover { background: linear-gradient(135deg, #0891b2, #2563eb); transform: translateX(-50%) scale(1.05); }
   </style>
 </head>
 <body class="h-full bg-black text-white">
@@ -140,9 +165,9 @@
     <!-- BATTLEPASS -->
     <div class="glass mx-4 mb-4 p-4 rounded-xl">
       <div class="flex items-center">
-        <button id="scroll-left" class="scroll-btn rounded-l-full z-10">◄◄</button>
+        <button id="scroll-left" class="scroll-btn rounded-l-full z-10">Left Arrow</button>
         <div id="levels-container" class="flex overflow-x-auto scrollbar-hide flex-1 px-4 space-x-4"></div>
-        <button id="scroll-right" class="scroll-btn rounded-r-full z-10">►►</button>
+        <button id="scroll-right" class="scroll-btn rounded-r-full z-10">Right Arrow</button>
       </div>
     </div>
   </div>
@@ -247,7 +272,7 @@
           clearInterval(check);
           localStorage.setItem("discord_claimed", "true");
           alert("Vault Verified role assigned! Check Discord.");
-          const btn = document.querySelector(".level-tile button");
+          const btn = document.querySelector(".level-tile .overlay-btn.discord");
           if (btn) btn.textContent = "CLAIMED";
         }
       }, 1000);
@@ -312,28 +337,32 @@
         const tile = document.createElement("div");
         const isUnlocked = i <= level;
         const showView = isUnlocked && i >= 2 && PRIZES[i] && PRIZES[i].includes("wallpaper");
+        const isDiscord = i === 1;
+
         tile.className = `level-tile glass p-4 rounded-xl text-center border-2 ${isUnlocked ? 'unlocked border-yellow-400' : 'border-gray-700'} ${i === level ? 'current' : ''}`;
 
-        if (i === 1) {
-          tile.innerHTML = `
-            <div class="text-2xl font-black text-yellow-400">Lv 1</div>
-            <img src="./assets/rewards/lv1.png" class="w-16 h-16 mx-auto my-2 object-contain drop-shadow-lg">
-            <div class="text-xs mt-1">Vault Verified Role + Emoji</div>
-            <button onclick="claimDiscordRole()" class="mt-2 px-4 py-1 bg-green-500 text-black text-xs rounded hover:bg-green-400">
-              CONNECT DISCORD
+        tile.innerHTML = `
+          <div class="text-2xl font-black ${isUnlocked ? 'text-yellow-400' : 'text-gray-600'}">Lv ${i}</div>
+          ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-14 h-14 mx-auto my-2 object-contain drop-shadow-lg">` : ''}
+          <div class="text-xs mt-1 opacity-80">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
+          <div class="text-xs mt-1 leading-tight text-gray-300">${PRIZES[i] || ""}</div>
+          
+          ${isDiscord ? `
+            <button onclick="claimDiscordRole()" class="overlay-btn discord">
+              ${localStorage.getItem("discord_claimed") ? "CLAIMED" : "CONNECT DISCORD"}
             </button>
-          `;
-        } else {
-          tile.innerHTML = `
-            <div class="text-2xl font-black ${isUnlocked ? 'text-yellow-400' : 'text-gray-600'}">Lv ${i}</div>
-            ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-14 h-14 mx-auto my-1 object-contain drop-shadow-lg">` : ''}
-            <div class="text-xs mt-1 opacity-80">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
-            <div class="text-xs mt-1 leading-tight text-gray-300">${PRIZES[i] || ""}</div>
-            ${showView ? `<button onclick="viewReward(${i})" class="mt-2 px-5 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-xs font-bold rounded-full hover:from-cyan-400 hover:to-blue-500 shadow-lg transform hover:scale-105 transition">VIEW</button>` : ''}
-          `;
-        }
+          ` : ''}
+          
+          ${showView ? `
+            <button onclick="viewReward(${i})" class="overlay-btn view">
+              VIEW
+            </button>
+          ` : ''}
+        `;
+
         container.appendChild(tile);
       }
+
       const currentTile = container.children[level - 1];
       container.scrollLeft = currentTile.offsetLeft - container.offsetWidth / 2 + 80;
       const jump = SCROLL_JUMP * 160;
