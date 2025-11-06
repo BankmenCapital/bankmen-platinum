@@ -25,7 +25,7 @@
     #bg img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
     .glass { backdrop-filter: blur(12px); background: rgba(20, 20, 40, 0.45); border: 1px solid rgba(251, 191, 36, 0.3); }
     
-    /* BATTLEPASS CONTAINER — NO VERTICAL SCROLL */
+    /* BATTLEPASS CONTAINER */
     #levels-container {
       overflow-x: auto;
       overflow-y: hidden;
@@ -33,30 +33,42 @@
       align-items: center;
       height: 180px;
       padding: 0 1rem;
+      gap: 12px; /* CLEAN SPACING */
     }
 
     .level-tile {
-      min-width: 118px;
+      width: 118px;
       height: 160px;
       transition: all 0.2s ease;
       position: relative;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
-      padding: 0.5rem;
+      padding: 12px 8px;
       border-radius: 1rem;
       border: 2px solid;
+      text-align: center;
+      flex-shrink: 0;
     }
     .level-tile.unlocked { border-color: #fbbf24; box-shadow: 0 0 16px rgba(251, 191, 36, 0.4); }
     .level-tile.locked { border-color: #374151; }
 
-    /* NO SCALE ON CURRENT — ALL TILES SAME SIZE */
+    /* CURRENT LEVEL — GLOW ONLY */
     .level-tile.current { box-shadow: 0 0 24px rgba(251, 191, 36, 0.7); }
 
     .xp-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); transition: width 1.2s ease; }
-    .scroll-btn { width: 48px; height: 48px; background: rgba(251, 191, 36, 0.2); border: 2px solid #fbbf24; }
+    .scroll-btn { 
+      width: 48px; height: 48px; 
+      background: rgba(251, 191, 36, 0.2); 
+      border: 2px solid #fbbf24; 
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
     .scroll-btn:hover { background: rgba(251, 191, 36, 0.4); }
+
     .xp-pop { position: absolute; font-weight: 900; color: #fbbf24; pointer-events: none; animation: floatUp 1.5s forwards; }
     @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-80px); opacity: 0; } }
     #daily-btn { animation: pulse 2s infinite; }
@@ -369,10 +381,10 @@
         tile.className = `level-tile glass ${isUnlocked ? 'unlocked' : 'locked'} ${i === level ? 'current' : ''}`;
 
         tile.innerHTML = `
-          <div class="text-xl font-black ${isUnlocked ? 'text-yellow-400' : 'text-gray-600'}">Lv ${i}</div>
-          ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-12 h-12 mx-auto my-1 object-contain drop-shadow-lg">` : ''}
-          <div class="text-xs mt-1 opacity-80 leading-tight">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
-          <div class="text-xs leading-tight text-gray-300">${PRIZES[i] || ""}</div>
+          <div class="text-xl font-black ${isUnlocked ? 'text-yellow-400' : 'text-gray-600'} mb-1">Lv ${i}</div>
+          ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-12 h-12 mx-auto object-contain drop-shadow-lg mb-1">` : ''}
+          <div class="text-xs font-medium opacity-80 leading-none mb-1">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
+          <div class="text-xs leading-tight text-gray-300 text-center px-1">${PRIZES[i] || ""}</div>
           
           ${isDiscord ? `
             <button onclick="claimDiscordRole()" class="overlay-btn discord">
@@ -392,7 +404,7 @@
 
       const currentTile = container.children[level - 1];
       container.scrollLeft = currentTile.offsetLeft - container.offsetWidth / 2 + 80;
-      const jump = SCROLL_JUMP * 140;
+      const jump = SCROLL_JUMP * 130;
       document.getElementById("scroll-left").onclick  = () => container.scrollBy({ left: -jump, behavior: "smooth" });
       document.getElementById("scroll-right").onclick = () => container.scrollBy({ left:  jump, behavior: "smooth" });
     }
