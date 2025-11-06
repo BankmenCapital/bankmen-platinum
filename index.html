@@ -55,11 +55,11 @@
   <!-- DASHBOARD -->
   <div id="dashboard" class="hidden h-full flex flex-col">
 
-    <!-- ONE XP BOX: HOLDER + BAR + TOTAL -->
+    <!-- XP BOX -->
     <div class="glass m-4 p-6 rounded-xl">
       <div class="flex justify-between items-start mb-4">
         <div>
-          <div class="text-sm text-gray-400">PLATINUM HOLDER</div>
+          <div class="text-sm text-gray-400">VAULT HOLDER</div>
           <div class="text-2xl font-bold"><span id="wallet">????</span></div>
         </div>
         <div class="text-right">
@@ -67,8 +67,6 @@
           <div class="text-sm text-gray-400">TOTAL XP</div>
         </div>
       </div>
-
-      <!-- XP BAR INSIDE THE SAME BOX -->
       <div class="h-8 bg-gray-800 rounded-full overflow-hidden">
         <div id="xp-fill" class="xp-fill w-0"></div>
       </div>
@@ -83,20 +81,19 @@
       <div class="glass w-1/3 p-6 rounded-xl">
         <h2 class="text-2xl font-bold text-yellow-400 mb-4">VAULT NEWS</h2>
         <ul class="space-y-3 text-sm">
-          <li class="glass p-3 rounded">Season 1 LIVE — Welcome to the first season of Bankmen Platinum! Complete the weekly missions and login daily to get an XP bonus.
-Unlock exclusive rewards and a higher status among your fellow Bankmen. </li>
-          <li class="glass p-3 rounded">Bankmen Aftermovie Premiers Friday!</li>
-
+          <li class="glass p-3 rounded">Season 1 LIVE — Daily +10 XP</li>
+          <li class="glass p-3 rounded">Socks Raffle: 48h left</li>
+          <li class="glass p-3 rounded">Alpha Lounge @ Lv 20</li>
         </ul>
       </div>
 
       <div class="glass w-2/3 p-6 rounded-xl relative">
         <h2 class="text-2xl font-bold text-yellow-400 mb-4">WEEKLY CHALLENGES</h2>
         <div class="grid grid-cols-2 gap-4 text-sm mb-12">
-          <div class="glass p-4 rounded">Post swing (+300 XP)</div>
-          <div class="glass p-4 rounded">RT + Like (+50 XP)</div>
-          <div class="glass p-4 rounded">Follow @ example (+25 XP)</div>
-          <div class="glass p-4 rounded">Attend a Bankmen Event (+500 XP)</div>
+          <div class="glass p-4 rounded">Post swing (+30 XP)</div>
+          <div class="glass p-4 rounded">RT pinned (+20 XP)</div>
+          <div class="glass p-4 rounded">Tag 3 frens (+15 XP)</div>
+          <div class="glass p-4 rounded">Join VC (+25 XP)</div>
         </div>
         <button id="daily-btn" class="absolute bottom-4 right-4 px-6 py-3 bg-yellow-500 text-black font-bold rounded-full hover:bg-yellow-400 transition shadow-lg">
           DAILY +10 XP
@@ -104,7 +101,7 @@ Unlock exclusive rewards and a higher status among your fellow Bankmen. </li>
       </div>
     </div>
 
-    <!-- BATTLEPASS — FAST SCROLL -->
+    <!-- BATTLEPASS -->
     <div class="glass mx-4 mb-4 p-4 rounded-xl">
       <div class="flex items-center">
         <button id="scroll-left" class="scroll-btn rounded-l-full z-10">◄◄</button>
@@ -117,10 +114,11 @@ Unlock exclusive rewards and a higher status among your fellow Bankmen. </li>
   <script>
     const PRIZES = [null,"Discord “Vault Verified” role","Phone wallpaper #1","1× Socks Raffle",null,"Desktop wallpaper #1 (4K)",null,"1× Pen Raffle","Phone wallpaper #2",null,"OG BADGE + banner",null,"2× Socks Raffle",null,null,"PRIVATE TRADING LOUNGE",null,null,"Desktop wallpaper #2",null,"ALPHA VAULT channel",null,"3× Coffee Mug Raffle",null,null,"Phone wallpaper #3 (GIF)",null,null,"1× Polo Raffle",null,"HOLDER SPOTLIGHT on X",null,"5× Socks Raffle",null,null,"2× Quarter-Zip Raffle",null,null,"Spotify lo-fi playlist",null,"VAULT LEGEND role",null,null,null,null,"3× Polo Raffle",null,"1× Grand Watch Raffle",null,"Personalized cartoon PFP","10× GRAND WATCH + Vault Overlord"];
     const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
+    const DISCORD_BOT_URL = "bankmen-discord-bot.bankmen-verifier.workers.dev"; // ← CHANGE THIS
     let token = null, pubkey = null, currentXP = 0;
     const XP_PER_LEVEL = 200;
     const TOTAL_LEVELS = 50;
-    const SCROLL_JUMP = 8; // ← 8 levels per click
+    const SCROLL_JUMP = 8;
 
     function showXPPop(amount) {
       const pop = document.createElement("div");
@@ -136,7 +134,7 @@ Unlock exclusive rewards and a higher status among your fellow Bankmen. </li>
       const btn = document.getElementById("daily-btn");
       const today = new Date().toDateString();
       const claimed = localStorage.getItem("daily_claimed") === today;
-      if (claimed) { btn.textContent = "CLAIMED ✓"; btn.disabled = true; btn.classList.replace("bg-yellow-500", "bg-gray-600"); }
+      if (claimed) { btn.textContent = "CLAIMED"; btn.disabled = true; btn.classList.replace("bg-yellow-500", "bg-gray-600"); }
       btn.onclick = async () => {
         if (claimed) return;
         try {
@@ -147,10 +145,28 @@ Unlock exclusive rewards and a higher status among your fellow Bankmen. </li>
             updateXP();
             showXPPop(10);
             localStorage.setItem("daily_claimed", today);
-            btn.textContent = "CLAIMED ✓"; btn.disabled = true; btn.classList.replace("bg-yellow-500", "bg-gray-600");
-          } else alert(data.error || "Error");
+            btn.textContent = "CLAIMED"; btn.disabled = true; btn.classList.replace("bg-yellow-500", "bg-gray-600");
+          }
         } catch { alert("Backend loading..."); }
       };
+    }
+
+    // DISCORD OAUTH CLAIM
+    async function claimDiscordRole() {
+      if (localStorage.getItem("discord_claimed")) {
+        alert("Already claimed!");
+        return;
+      }
+      const win = window.open(`${DISCORD_BOT_URL}/login`, "discord", "width=500,height=600");
+      const check = setInterval(() => {
+        if (win.closed) {
+          clearInterval(check);
+          localStorage.setItem("discord_claimed", "true");
+          alert("Vault Verified role assigned! Check Discord.");
+          const btn = document.querySelector(".level-tile button");
+          if (btn) btn.textContent = "CLAIMED";
+        }
+      }, 1000);
     }
 
     function waitForPhantom() {
@@ -210,18 +226,28 @@ Unlock exclusive rewards and a higher status among your fellow Bankmen. </li>
       for (let i = 1; i <= TOTAL_LEVELS; i++) {
         const tile = document.createElement("div");
         tile.className = `level-tile glass p-4 rounded-xl text-center border-2 ${i <= level ? 'unlocked border-yellow-400' : 'border-gray-700'} ${i === level ? 'current' : ''}`;
-tile.innerHTML = `
-  <div class="text-2xl font-black text-yellow-400">Lv ${i}</div>
-  ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-16 h-16 mx-auto my-2 object-contain drop-shadow-lg">` : ''}
-  <div class="text-xs mt-1 opacity-80">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
-  <div class="text-xs mt-2 leading-tight">${PRIZES[i] || ""}</div>
-`;
+        if (i === 1) {
+          tile.innerHTML = `
+            <div class="text-2xl font-black text-yellow-400">Lv 1</div>
+            <img src="./assets/rewards/lv1.png" class="w-16 h-16 mx-auto my-2 object-contain drop-shadow-lg">
+            <div class="text-xs mt-1">Vault Verified Role + Emoji</div>
+            <button onclick="claimDiscordRole()" class="mt-2 px-4 py-1 bg-green-500 text-black text-xs rounded hover:bg-green-400">
+              CONNECT DISCORD
+            </button>
+          `;
+        } else {
+          tile.innerHTML = `
+            <div class="text-2xl font-black text-yellow-400">Lv ${i}</div>
+            ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-16 h-16 mx-auto my-2 object-contain drop-shadow-lg">` : ''}
+            <div class="text-xs mt-1 opacity-80">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
+            <div class="text-xs mt-2 leading-tight">${PRIZES[i] || ""}</div>
+          `;
+        }
         container.appendChild(tile);
       }
       const currentTile = container.children[level - 1];
       container.scrollLeft = currentTile.offsetLeft - container.offsetWidth / 2 + 80;
-
-      const jump = SCROLL_JUMP * 160; // ~8 tiles
+      const jump = SCROLL_JUMP * 160;
       document.getElementById("scroll-left").onclick  = () => container.scrollBy({ left: -jump, behavior: "smooth" });
       document.getElementById("scroll-right").onclick = () => container.scrollBy({ left:  jump, behavior: "smooth" });
     }
