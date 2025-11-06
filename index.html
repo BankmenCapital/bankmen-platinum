@@ -24,9 +24,36 @@
     #bg { position: fixed; inset: 0; z-index: -1; }
     #bg img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
     .glass { backdrop-filter: blur(12px); background: rgba(20, 20, 40, 0.45); border: 1px solid rgba(251, 191, 36, 0.3); }
-    .level-tile { min-width: 128px; max-height: 180px; transition: all 0.3s; position: relative; }
-    .level-tile.unlocked { border-color: #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
-    .level-tile.current { transform: scale(1.08); z-index: 10; }
+    
+    /* BATTLEPASS CONTAINER — NO VERTICAL SCROLL */
+    #levels-container {
+      overflow-x: auto;
+      overflow-y: hidden;
+      display: flex;
+      align-items: center;
+      height: 180px;
+      padding: 0 1rem;
+    }
+
+    .level-tile {
+      min-width: 118px;
+      height: 160px;
+      transition: all 0.2s ease;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 0.5rem;
+      border-radius: 1rem;
+      border: 2px solid;
+    }
+    .level-tile.unlocked { border-color: #fbbf24; box-shadow: 0 0 16px rgba(251, 191, 36, 0.4); }
+    .level-tile.locked { border-color: #374151; }
+
+    /* NO SCALE ON CURRENT — ALL TILES SAME SIZE */
+    .level-tile.current { box-shadow: 0 0 24px rgba(251, 191, 36, 0.7); }
+
     .xp-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); transition: width 1.2s ease; }
     .scroll-btn { width: 48px; height: 48px; background: rgba(251, 191, 36, 0.2); border: 2px solid #fbbf24; }
     .scroll-btn:hover { background: rgba(251, 191, 36, 0.4); }
@@ -67,11 +94,11 @@
     /* OVERLAY BUTTONS */
     .overlay-btn {
       position: absolute;
-      bottom: 8px;
+      bottom: 6px;
       left: 50%;
       transform: translateX(-50%);
-      padding: 6px 12px;
-      font-size: 10px;
+      padding: 5px 10px;
+      font-size: 9px;
       font-weight: bold;
       border-radius: 9999px;
       opacity: 0;
@@ -163,10 +190,10 @@
     </div>
 
     <!-- BATTLEPASS -->
-    <div class="glass mx-4 mb-4 p-4 rounded-xl">
-      <div class="flex items-center">
+    <div class="glass mx-4 mb-4 rounded-xl overflow-hidden">
+      <div class="flex items-center h-48">
         <button id="scroll-left" class="scroll-btn rounded-l-full z-10">Left Arrow</button>
-        <div id="levels-container" class="flex overflow-x-auto scrollbar-hide flex-1 px-4 space-x-4"></div>
+        <div id="levels-container"></div>
         <button id="scroll-right" class="scroll-btn rounded-r-full z-10">Right Arrow</button>
       </div>
     </div>
@@ -339,17 +366,17 @@
         const showView = isUnlocked && i >= 2 && PRIZES[i] && PRIZES[i].includes("wallpaper");
         const isDiscord = i === 1;
 
-        tile.className = `level-tile glass p-4 rounded-xl text-center border-2 ${isUnlocked ? 'unlocked border-yellow-400' : 'border-gray-700'} ${i === level ? 'current' : ''}`;
+        tile.className = `level-tile glass ${isUnlocked ? 'unlocked' : 'locked'} ${i === level ? 'current' : ''}`;
 
         tile.innerHTML = `
-          <div class="text-2xl font-black ${isUnlocked ? 'text-yellow-400' : 'text-gray-600'}">Lv ${i}</div>
-          ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-14 h-14 mx-auto my-2 object-contain drop-shadow-lg">` : ''}
-          <div class="text-xs mt-1 opacity-80">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
-          <div class="text-xs mt-1 leading-tight text-gray-300">${PRIZES[i] || ""}</div>
+          <div class="text-xl font-black ${isUnlocked ? 'text-yellow-400' : 'text-gray-600'}">Lv ${i}</div>
+          ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-12 h-12 mx-auto my-1 object-contain drop-shadow-lg">` : ''}
+          <div class="text-xs mt-1 opacity-80 leading-tight">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
+          <div class="text-xs leading-tight text-gray-300">${PRIZES[i] || ""}</div>
           
           ${isDiscord ? `
             <button onclick="claimDiscordRole()" class="overlay-btn discord">
-              ${localStorage.getItem("discord_claimed") ? "CLAIMED" : "CONNECT DISCORD"}
+              ${localStorage.getItem("discord_claimed") ? "CLAIMED" : "CONNECT"}
             </button>
           ` : ''}
           
@@ -365,7 +392,7 @@
 
       const currentTile = container.children[level - 1];
       container.scrollLeft = currentTile.offsetLeft - container.offsetWidth / 2 + 80;
-      const jump = SCROLL_JUMP * 160;
+      const jump = SCROLL_JUMP * 140;
       document.getElementById("scroll-left").onclick  = () => container.scrollBy({ left: -jump, behavior: "smooth" });
       document.getElementById("scroll-right").onclick = () => container.scrollBy({ left:  jump, behavior: "smooth" });
     }
