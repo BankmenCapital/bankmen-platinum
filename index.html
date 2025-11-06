@@ -161,10 +161,8 @@
     function setupDevButton() {
       const btn = document.getElementById("dev-xp-btn");
       if (!btn) return;
-      if (location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
-        btn.remove();
-        return;
-      }
+
+      // DEV BUTTON ALWAYS VISIBLE (pre-launch)
       btn.onclick = async () => {
         try {
           const res = await fetch(`${WORKER_URL}/dev-xp`, {
