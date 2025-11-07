@@ -1,54 +1,124 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Admin - Mission Queue</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bankmen Admin - Missions & Raffles</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #111; color: white; font-family: sans-serif; }
+    .card { background: #222; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+    button { background: #fbbf24; color: black; padding: 0.5rem 1rem; border-radius: 9999px; font-weight: bold; transition: all 0.2s; }
+    button:hover { background: #f59e0b; }
+    .approve { background: #10b981; color: white; }
+    .deny { background: #ef4444; color: white; }
+  </style>
 </head>
-<body class="bg-gray-900 text-white p-8">
-  <h1 class="text-3xl font-bold mb-6">Mission Approval Queue</h1>
-  <div id="queue" class="space-y-4"></div>
+<body class="p-8">
+  <h1 class="text-3xl font-bold mb-6">Bankmen Admin Dashboard</h1>
+
+  <!-- Tabs -->
+  <div class="mb-6">
+    <button onclick="showTab('missions')" class="px-4 py-2 bg-blue-600 rounded-l-md">Missions</button>
+    <button onclick="showTab('raffles')" class="px-4 py-2 bg-gray-600 rounded-r-md">Raffles</button>
+  </div>
+
+  <!-- Missions Tab -->
+  <div id="missions-tab" class="space-y-4">
+    <h2 class="text-xl font-bold mb-4">Mission Submissions</h2>
+    <div id="missions-list"></div>
+  </div>
+
+  <!-- Raffles Tab -->
+  <div id="raffles-tab" class="space-y-4 hidden">
+    <h2 class="text-xl font-bold mb-4">Raffle Entries</h2>
+    <div class="flex gap-2 mb-4">
+      <input id="raffle-item" placeholder="Item name (e.g. socks, polo)" class="p-2 bg-gray-700 rounded text-white">
+      <button onclick="loadRaffle()" class="px-4 py-2 bg-indigo-600 rounded">Load</button>
+    </div>
+    <div id="raffle-list"></div>
+  </div>
 
   <script>
-    const ADMIN_KEY = "4924049830"; // ← CHANGE THIS
+    const ADMIN_KEY = "your-super-secret-admin-key-12345"; // ← CHANGE TO YOUR KEY
+    const BASE_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
 
-    async function loadQueue() {
-      const res = await fetch('https://nft-dashboard-verifier.bankmen-verifier.workers.dev/missions');
-      const queue = await res.json();
-      document.getElementById('queue').innerHTML = queue.map(m => `
-        <div class="bg-gray-800 p-4 rounded flex justify-between items-center">
-          <div>
-            <strong>${m.wallet.slice(0,8)}...</strong><br>
-            <span class="text-blue-400">@${m.twitter}</span><br>
-            <a href="${m.url}" target="_blank" class="text-sm text-cyan-400">View Post</a>
+    let currentTab = 'missions';
+
+    function showTab(tab) {
+      currentTab = tab;
+      document.getElementById('missions-tab').classList.toggle('hidden', tab !== 'missions');
+      document.getElementById('raffles-tab').classList.toggle('hidden', tab !== 'raffles');
+      if (tab === 'missions') loadMissions();
+      if (tab === 'raffles') loadRaffle();
+    }
+
+    async function loadMissions() {
+      try {
+        const res = await fetch(`${BASE_URL}/missions`);
+        const queue = await res.json();
+        document.getElementById('missions-list').innerHTML = queue.length > 0 ? queue.map(m => `
+          <div class="card flex justify-between items-center">
+            <div>
+              <strong>${m.wallet.slice(0,8)}...</strong><br>
+              <span class="text-blue-400">@${m.twitter || 'Not linked'}</span><br>
+              <a href="${m.url}" target="_blank" class="text-cyan-400 hover:underline">View Post</a>
+            </div>
+            <div class="space-x-2">
+              <button onclick="approveMission('${m.wallet}', '${m.mission}', ${m.xp || 50})" class="approve px-3 py-1 rounded">Approve +${m.xp || 50}</button>
+              <button onclick="denyMission('${m.wallet}', '${m.mission}')" class="deny px-3 py-1 rounded">Deny</button>
+            </div>
           </div>
-          <div class="space-x-2">
-            <button onclick="approve('${m.wallet}', '${m.mission}', ${m.xp})" class="px-3 py-1 bg-green-600 rounded">APPROVE +${m.xp}</button>
-            <button onclick="deny('${m.wallet}', '${m.mission}')" class="px-3 py-1 bg-red-600 rounded">DENY</button>
+        `).join('') : '<p class="text-gray-400 text-center">No pending missions</p>';
+      } catch (e) {
+        document.getElementById('missions-list').innerHTML = '<p class="text-red-400">Error loading missions</p>';
+      }
+    }
+
+    async function loadRaffle() {
+      const item = document.getElementById('raffle-item').value || 'default';
+      try {
+        const res = await fetch(`${BASE_URL}/raffle-entries?item=${item}`);
+        const entries = await res.json();
+        document.getElementById('raffle-list').innerHTML = entries.length > 0 ? entries.map(e => `
+          <div class="card text-sm">
+            <strong>${e.wallet.slice(0,8)}...</strong> - Level ${e.level} - ${new Date(e.time).toLocaleString()}
           </div>
-        </div>
-      `).join('');
+        `).join('') : '<p class="text-gray-400 text-center">No entries for "' + item + '"</p>';
+      } catch (e) {
+        document.getElementById('raffle-list').innerHTML = '<p class="text-red-400">Error loading raffles</p>';
+      }
     }
 
-    async function approve(wallet, mission, xp) {
-      await fetch('https://nft-dashboard-verifier.bankmen-verifier.workers.dev/approve-mission', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
-        body: JSON.stringify({ wallet, mission, xp })
-      });
-      loadQueue();
+    async function approveMission(wallet, mission, xp) {
+      try {
+        await fetch(`${BASE_URL}/approve-mission`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+          body: JSON.stringify({ wallet, mission, xp })
+        });
+        loadMissions();
+      } catch (e) {
+        alert('Approve failed: ' + e.message);
+      }
     }
 
-    async function deny(wallet, mission) {
-      await fetch('https://nft-dashboard-verifier.bankmen-verifier.workers.dev/deny-mission', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
-        body: JSON.stringify({ wallet, mission })
-      });
-      loadQueue();
+    async function denyMission(wallet, mission) {
+      try {
+        await fetch(`${BASE_URL}/deny-mission`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+          body: JSON.stringify({ wallet, mission })
+        });
+        loadMissions();
+      } catch (e) {
+        alert('Deny failed: ' + e.message);
+      }
     }
 
-    loadQueue();
-    setInterval(loadQueue, 10000);
+    // Init
+    loadMissions();
+    setInterval(loadMissions, 10000);
   </script>
 </body>
 </html>
