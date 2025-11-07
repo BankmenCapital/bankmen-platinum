@@ -1,84 +1,54 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Bankmen Admin</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <style>
-    body { background: #111; color: white; font-family: sans-serif; padding: 2rem; }
-    .card { background: #222; padding: 1rem; border-radius: 1rem; margin-bottom: 1rem; }
-    button { background: #fbbf24; color: black; padding: 0.5rem 1rem; border-radius: 9999px; font-weight: bold; }
-  </style>
+  <title>Admin - Mission Queue</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h1 class="text-3xl font-bold mb-6">BANKMEN ADMIN</h1>
-
-  <div class="grid md:grid-cols-2 gap-6">
-    <!-- RAFFLE POOLS -->
-    <div>
-      <h2 class="text-xl mb-4">Raffle Entries</h2>
-      <div id="raffle-socks" class="card"><strong>Socks:</strong> <span id="socks-count">0</span> <button onclick="exportCSV('socks')">Export CSV</button></div>
-      <div id="raffle-polo" class="card"><strong>Polo:</strong> <span id="polo-count">0</span> <button onclick="exportCSV('polo')">Export CSV</button></div>
-      <div id="raffle-watch" class="card"><strong>Watch:</strong> <span id="watch-count">0</span> <button onclick="exportCSV('watch')">Export CSV</button></div>
-    </div>
-
-    <!-- MISSION QUEUE -->
-    <div>
-      <h2 class="text-xl mb-4">Golf Swing Submissions</h2>
-      <div id="mission-queue"></div>
-    </div>
-  </div>
+<body class="bg-gray-900 text-white p-8">
+  <h1 class="text-3xl font-bold mb-6">Mission Approval Queue</h1>
+  <div id="queue" class="space-y-4"></div>
 
   <script>
-    const WORKER = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
-    const ADMIN_KEY = "4924049830"; // CHANGE THIS!
+    const ADMIN_KEY = "4924049830"; // ← CHANGE THIS
 
-    async function load() {
-      try {
-        const [socks, polo, watch, queue] = await Promise.all([
-          fetch(`${WORKER}/raffle?item=socks`).then(r => r.json()),
-          fetch(`${WORKER}/raffle?item=polo`).then(r => r.json()),
-          fetch(`${WORKER}/raffle?item=grand_watch`).then(r => r.json()),
-          fetch(`${WORKER}/missions`).then(r => r.json())
-        ]);
-        document.getElementById("socks-count").textContent = socks.length;
-        document.getElementById("polo-count").textContent = polo.length;
-        document.getElementById("watch-count").textContent = watch.length;
-
-        const html = queue.map(m => `
-          <div class="card flex justify-between items-center">
-            <div>
-              <strong>${m.wallet.slice(0,8)}...</strong><br>
-              <a href="${m.url}" target="_blank" class="text-blue-400 text-sm">View Post</a>
-            </div>
-            <button onclick="approve('${m.wallet}')">APPROVE +400 XP</button>
+    async function loadQueue() {
+      const res = await fetch('https://nft-dashboard-verifier.bankmen-verifier.workers.dev/missions');
+      const queue = await res.json();
+      document.getElementById('queue').innerHTML = queue.map(m => `
+        <div class="bg-gray-800 p-4 rounded flex justify-between items-center">
+          <div>
+            <strong>${m.wallet.slice(0,8)}...</strong><br>
+            <span class="text-blue-400">@${m.twitter}</span><br>
+            <a href="${m.url}" target="_blank" class="text-sm text-cyan-400">View Post</a>
           </div>
-        `).join('');
-        document.getElementById("mission-queue").innerHTML = html;
-      } catch (e) { console.error(e); }
+          <div class="space-x-2">
+            <button onclick="approve('${m.wallet}', '${m.mission}', ${m.xp})" class="px-3 py-1 bg-green-600 rounded">APPROVE +${m.xp}</button>
+            <button onclick="deny('${m.wallet}', '${m.mission}')" class="px-3 py-1 bg-red-600 rounded">DENY</button>
+          </div>
+        </div>
+      `).join('');
     }
 
-    async function approve(wallet) {
-      await fetch(`${WORKER}/approve-mission`, {
+    async function approve(wallet, mission, xp) {
+      await fetch('https://nft-dashboard-verifier.bankmen-verifier.workers.dev/approve-mission', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
-        body: JSON.stringify({ wallet, mission: 'golf_swing', xp: 400 })
+        body: JSON.stringify({ wallet, mission, xp })
       });
-      load();
+      loadQueue();
     }
 
-    function exportCSV(item) {
-      fetch(`${WORKER}/raffle?item=${item}`).then(r => r.json()).then(data => {
-        const csv = data.map(e => `${e.wallet},${new Date(e.time).toLocaleString()}`).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `${item}-raffle.csv`;
-        a.click();
+    async function deny(wallet, mission) {
+      await fetch('https://nft-dashboard-verifier.bankmen-verifier.workers.dev/deny-mission', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+        body: JSON.stringify({ wallet, mission })
       });
+      loadQueue();
     }
 
-    load();
-    setInterval(load, 10000);
+    loadQueue();
+    setInterval(loadQueue, 10000);
   </script>
 </body>
 </html>
