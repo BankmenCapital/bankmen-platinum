@@ -423,7 +423,7 @@
 
   
 <script>
-  // ——————— TWITTER LINK (FIXED) ———————
+  // ——————— TWITTER LINK (FINAL FIXED VERSION) ———————
   async function checkTwitterStatus() {
     if (!token) return;
     const stored = localStorage.getItem('twitter_handle');
@@ -438,10 +438,9 @@
     const popup = window.open(
       `${WORKER_URL}/link-twitter?token=${token}`,
       'twitter-link',
-      'width=600,height=700'
+      'width=600,height=700,scrollbars=yes'
     );
 
-    // Listen for success message
     window.addEventListener('message', function handler(e) {
       if (e.data === 'twitter_linked') {
         const handle = localStorage.getItem('twitter_handle');
@@ -451,7 +450,6 @@
       }
     });
 
-    // Fallback: poll if closed
     const poll = setInterval(() => {
       if (popup.closed) {
         clearInterval(poll);
