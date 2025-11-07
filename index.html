@@ -25,31 +25,15 @@
     #bg img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
     .glass { backdrop-filter: blur(12px); background: rgba(20, 20, 40, 0.45); border: 1px solid rgba(251, 191, 36, 0.3); }
     
-    /* BATTLEPASS CONTAINER */
+    /* BATTLEPASS */
     #levels-container {
-      overflow-x: auto;
-      overflow-y: hidden;
-      display: flex;
-      align-items: center;
-      height: 180px;
-      padding: 0 1rem;
-      gap: 12px;
+      overflow-x: auto; overflow-y: hidden; display: flex; align-items: center;
+      height: 180px; padding: 0 1rem; gap: 12px;
     }
-
     .level-tile {
-      width: 118px;
-      height: 160px;
-      transition: all 0.2s ease;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: center;
-      padding: 12px 8px;
-      border-radius: 1rem;
-      border: 2px solid;
-      text-align: center;
-      flex-shrink: 0;
+      width: 118px; height: 160px; transition: all 0.2s ease; position: relative;
+      display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+      padding: 12px 8px; border-radius: 1rem; border: 2px solid; text-align: center; flex-shrink: 0;
     }
     .level-tile.unlocked { border-color: #fbbf24; box-shadow: 0 0 16px rgba(251, 191, 36, 0.4); }
     .level-tile.locked { border-color: #374151; }
@@ -57,36 +41,14 @@
 
     .xp-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); transition: width 1.2s ease; }
 
-    /* ARROW BUTTONS — PURE SYMBOLS VIA ::before */
+    /* ARROWS — FIXED */
     .scroll-btn {
-      width: 48px;
-      height: 48px;
-      background: rgba(251, 191, 36, 0.2);
-      border: 2px solid #fbbf24;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      user-select: none;
-      overflow: hidden;
+      width: 48px; height: 48px; background: rgba(251, 191, 36, 0.2); border: 2px solid #fbbf24;
+      display: flex; align-items: center; justify-content: center; position: relative; user-select: none; overflow: hidden;
     }
-    .scroll-btn:hover {
-      background: rgba(251, 191, 36, 0.4);
-    }
-    .scroll-left-btn::before {
-      content: ' ';
-      color: #fbbf24;
-      font-weight: bold;
-      font-size: 1.8rem;
-      position: absolute;
-    }
-    .scroll-right-btn::before {
-      content: ' ';
-      color: #fbbf24;
-      font-weight: bold;
-      font-size: 1.8rem;
-      position: absolute;
-    }
+    .scroll-btn:hover { background: rgba(251, 191, 36, 0.4); }
+    .scroll-left-btn::before { content: 'Left Arrow'; color: #fbbf24; font-weight: bold; font-size: 1.8rem; position: absolute; }
+    .scroll-right-btn::before { content: 'Right Arrow'; color: #fbbf24; font-weight: bold; font-size: 1.8rem; position: absolute; }
 
     .xp-pop { position: absolute; font-weight: 900; color: #fbbf24; pointer-events: none; animation: floatUp 1.5s forwards; }
     @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-80px); opacity: 0; } }
@@ -94,54 +56,14 @@
     @keyframes pulse { 0%,100% { box-shadow: 0 0 20px rgba(251,191,36,0.6); } 50% { box-shadow: 0 0 30px rgba(251,191,36,1); } }
 
     /* MODAL */
-    #image-modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.9);
-      z-index: 100;
-      justify-content: center;
-      align-items: center;
-      padding: 2rem;
-    }
-    #modal-img {
-      max-width: 100%;
-      max-height: 100%;
-      border: 3px solid #fbbf24;
-      border-radius: 12px;
-      box-shadow: 0 0 40px rgba(251, 191, 36, 0.6);
-    }
-    #close-modal {
-      position: absolute;
-      top: 1rem; right: 1rem;
-      font-size: 2rem;
-      color: #fbbf24;
-      cursor: pointer;
-      font-weight: bold;
-      text-shadow: 0 0 10px #000;
-    }
+    #image-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; padding: 2rem; }
+    #modal-img { max-width: 100%; max-height: 100%; border: 3px solid #fbbf24; border-radius: 12px; box-shadow: 0 0 40px rgba(251, 191, 36, 0.6); }
+    #close-modal { position: absolute; top: 1rem; right: 1rem; font-size: 2rem; color: #fbbf24; cursor: pointer; font-weight: bold; text-shadow: 0 0 10px #000; }
     #close-modal:hover { transform: scale(1.1); }
 
     /* OVERLAY BUTTONS */
-    .overlay-btn {
-      position: absolute;
-      bottom: 6px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 5px 10px;
-      font-size: 9px;
-      font-weight: bold;
-      border-radius: 9999px;
-      opacity: 0;
-      transition: all 0.2s ease;
-      pointer-events: none;
-      z-index: 20;
-    }
-    .level-tile:hover .overlay-btn,
-    .level-tile.current .overlay-btn {
-      opacity: 1;
-      pointer-events: auto;
-    }
+    .overlay-btn { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); padding: 5px 10px; font-size: 9px; font-weight: bold; border-radius: 9999px; opacity: 0; transition: all 0.2s ease; pointer-events: none; z-index: 20; }
+    .level-tile:hover .overlay-btn, .level-tile.current .overlay-btn { opacity: 1; pointer-events: auto; }
     .overlay-btn.discord { background: #5865F2; color: white; }
     .overlay-btn.discord:hover { background: #4752C4; transform: translateX(-50%) scale(1.05); }
     .overlay-btn.view { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; }
@@ -195,20 +117,25 @@
         <ul class="space-y-3 text-sm">
           <li class="glass p-3 rounded">Season 1 Beta is LIVE — Thanks for helping beta test our dashboard! Leave some feedback and try to break things while you're here.</li>
           <li class="glass p-3 rounded">Community Take Over!</li>
-
         </ul>
       </div>
 
       <div class="glass w-2/3 p-6 rounded-xl relative">
         <h2 class="text-2xl font-bold text-yellow-400 mb-4">WEEKLY CHALLENGES</h2>
         <div class="grid grid-cols-2 gap-4 text-sm mb-12">
-          <div class="glass p-4 rounded">Post a golf swing with #BankmenCapital (+400 XP)</div>
+          <!-- GOLF SWING MISSION -->
+          <div class="glass p-4 rounded relative">
+            <div class="font-bold text-yellow-400">Post golf swing + #BankmenCapital (+400 XP)</div>
+            <input id="golf-url" type="text" placeholder="Paste X post URL" class="w-full mt-2 p-2 bg-gray-800 rounded text-sm text-white">
+            <button onclick="submitGolfSwing()" class="mt-2 w-full px-4 py-1 bg-yellow-500 text-black text-xs font-bold rounded">SUBMIT PROOF</button>
+            <div id="golf-status" class="text-xs mt-1 text-gray-400"></div>
+          </div>
           <div class="glass p-4 rounded">Like + RT (+100 XP)</div>
           <div class="glass p-4 rounded">Like + RT (+100 XP)</div>
           <div class="glass p-4 rounded">Post a GM post with your Bankmen (+200 XP)</div>
         </div>
 
-        <!-- DEV + DAILY BUTTONS -->
+        <!-- DEV + DAILY -->
         <div class="absolute bottom-4 right-4 flex gap-3">
           <button id="dev-xp-btn" class="px-4 py-3 bg-purple-600 text-white font-bold rounded-full hover:bg-purple-500 text-sm shadow-lg">
             +200 XP (DEV)
@@ -220,7 +147,7 @@
       </div>
     </div>
 
-    <!-- BATTLEPASS — ARROWS FIXED -->
+    <!-- BATTLEPASS -->
     <div class="glass mx-4 mb-4 rounded-xl overflow-hidden">
       <div class="flex items-center h-48">
         <button id="scroll-left" class="scroll-btn scroll-left-btn rounded-l-full z-10"></button>
@@ -231,7 +158,7 @@
 
   </div>
 
-  <!-- IMAGE MODAL -->
+  <!-- MODAL -->
   <div id="image-modal">
     <span id="close-modal">×</span>
     <img id="modal-img" src="" alt="Reward">
@@ -282,11 +209,7 @@
       if (!btn) return;
       btn.onclick = async () => {
         try {
-          const res = await fetch(`${WORKER_URL}/dev-xp`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token, amount: 200 })
-          });
+          const res = await fetch(`${WORKER_URL}/dev-xp`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, amount: 200 }) });
           const data = await res.json();
           if (data.success) {
             currentXP += 200;
@@ -294,13 +217,10 @@
             showXPPop(200);
             alert("+200 XP (DEV)");
           }
-        } catch (e) {
-          alert("DEV XP failed: " + e.message);
-        }
+        } catch (e) { alert("DEV XP failed: " + e.message); }
       };
     }
 
-    // MODAL LOGIC
     const modal = document.getElementById("image-modal");
     const modalImg = document.getElementById("modal-img");
     const closeModal = document.getElementById("close-modal");
@@ -319,12 +239,8 @@
     closeModal.onclick = () => modal.style.display = "none";
     modal.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
 
-    // DISCORD OAUTH CLAIM
     async function claimDiscordRole() {
-      if (localStorage.getItem("discord_claimed")) {
-        alert("Already claimed!");
-        return;
-      }
+      if (localStorage.getItem("discord_claimed")) { alert("Already claimed!"); return; }
       const win = window.open(`${DISCORD_BOT_URL}/login`, "discord", "width=500,height=600");
       const check = setInterval(() => {
         if (win.closed) {
@@ -335,6 +251,57 @@
           if (btn) btn.textContent = "CLAIMED";
         }
       }, 1000);
+    }
+
+    async function submitGolfSwing() {
+      const url = document.getElementById("golf-url").value.trim();
+      if (!url) return document.getElementById("golf-status").textContent = "Enter X post URL";
+      document.getElementById("golf-status").textContent = "Submitting...";
+      try {
+        const res = await fetch(`${WORKER_URL}/submit-mission`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, mission: 'golf_swing', url, xp: 400 })
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById("golf-status").textContent = "Submitted! Awaiting approval.";
+          document.getElementById("golf-url").disabled = true;
+        } else {
+          document.getElementById("golf-status").textContent = data.error;
+        }
+      } catch (e) {
+        document.getElementById("golf-status").textContent = "Error. Try again.";
+      }
+    }
+
+    async function claimRaffleTicket(level) {
+      const prize = PRIZES[level];
+      const match = prize.match(/(\d+)×\s(.+)\sRaffle/);
+      if (!match) return;
+      const [_, countStr, item] = match;
+      const count = parseInt(countStr);
+      const itemKey = item.toLowerCase().replace(/ /g, '_');
+
+      try {
+        const res = await fetch(`${WORKER_URL}/claim-raffle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, level, count, item: itemKey })
+        });
+        const data = await res.json();
+        if (data.success) {
+          const pop = document.createElement("div");
+          pop.className = "xp-pop text-3xl text-green-400";
+          pop.textContent = `+${count} ${item} TICKET${count > 1 ? 'S' : ''}!`;
+          pop.style.left = `${Math.random() * 50 + 25}%`;
+          pop.style.top = "30%";
+          document.getElementById("dashboard").appendChild(pop);
+          setTimeout(() => pop.remove(), 1600);
+        }
+      } catch (e) {
+        console.error("Raffle claim failed:", e);
+      }
     }
 
     function waitForPhantom() {
@@ -379,14 +346,24 @@
       updateXP();
     }
 
-    function updateXP() {
-      const level = Math.min(Math.floor(currentXP / XP_PER_LEVEL) + 1, TOTAL_LEVELS);
+    async function updateXP() {
+      const oldLevel = parseInt(document.getElementById("level").textContent);
+      const newLevel = Math.min(Math.floor(currentXP / XP_PER_LEVEL) + 1, TOTAL_LEVELS);
       const progress = (currentXP % XP_PER_LEVEL) / XP_PER_LEVEL * 100;
+
       document.getElementById("xp").textContent = currentXP.toLocaleString();
       document.getElementById("xp-fill").style.width = progress + "%";
-      document.getElementById("level").textContent = level;
+      document.getElementById("level").textContent = newLevel;
       document.getElementById("xp-progress").textContent = `${currentXP % XP_PER_LEVEL} / ${XP_PER_LEVEL} XP`;
-      document.querySelectorAll(".level-tile").forEach((t, i) => t.classList.toggle("current", i + 1 === level));
+      document.querySelectorAll(".level-tile").forEach((t, i) => t.classList.toggle("current", i + 1 === newLevel));
+
+      // AUTO-CLAIM RAFFLE TICKETS ON LEVEL UP
+      for (let lvl = oldLevel + 1; lvl <= newLevel; lvl++) {
+        const prize = PRIZES[lvl];
+        if (prize && prize.includes('Raffle')) {
+          await claimRaffleTicket(lvl);
+        }
+      }
     }
 
     function buildBattlepass() {
