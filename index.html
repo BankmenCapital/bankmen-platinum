@@ -421,33 +421,43 @@
 
 
   
-  <script>
-  const token = localStorage.getItem('auth_token'); // ← your existing token
+<script>
+  /* --------------------------------------------------------------
+     TWITTER LINK – FIXED (uses the token you already have from Phantom)
+     -------------------------------------------------------------- */
+  // token is already declared in the main script above (`let token = null;`)
+  // we **do not** re-declare it here.
 
   // Check if Twitter is already linked
-  async function checkTwitter() {
-    if (!token) return;
-    const payload = JSON.parse(atob(token));
-    const handle = await fetch(`https://nft-dashboard-verifier.bankmen-verifier.workers.dev/xp?token=${token}`)
-      .then(r => r.json())
-      .then(() => localStorage.getItem('twitter_handle')); // fallback
-    if (handle) {
-      document.getElementById('twitter-status').textContent = `Linked: @${handle}`;
-      document.getElementById('link-twitter').textContent = 'Change Twitter';
+  async function checkTwitterStatus() {
+    if (!token) return;                                   // no wallet yet
+    const stored = localStorage.getItem('twitter_handle');
+    if (stored) {
+      document.getElementById('twitter-status').textContent = `Linked: @${stored}`;
+      document.getElementById('link-twitter').textContent   = 'Change Twitter';
     }
   }
 
+  // Open the OAuth popup
   document.getElementById('link-twitter').onclick = () => {
     if (!token) {
-      alert('Connect wallet first!');
+      alert('Please connect your wallet first!');
       return;
     }
-    const linkUrl = `https://nft-dashboard-verifier.bankmen-verifier.workers.dev/link-twitter?token=${token}`;
-    window.open(linkUrl, 'twitter', 'width=600,height=700');
+    const url = `${WORKER_URL}/link-twitter?token=${token}`;
+    const popup = window.open(url, 'twitter-link', 'width=600,height=700,scrollbars=yes');
+
+    // When the popup closes, refresh the status
+    const poll = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(poll);
+        checkTwitterStatus();
+      }
+    }, 800);
   };
 
-  // Auto-check on load
-  checkTwitter();
+  // Run on page load (after the main script has set `token`)
+  checkTwitterStatus();
 </script>
 
   
