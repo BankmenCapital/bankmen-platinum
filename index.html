@@ -423,14 +423,20 @@
 
   
 <script>
-  // ——————— TWITTER LINK (FINAL FIXED VERSION) ———————
-  async function checkTwitterStatus() {
-    if (!token) return;
-    const stored = localStorage.getItem('twitter_handle');
-    if (stored) {
-      document.getElementById('twitter-status').textContent = `Linked: @${stored}`;
-      document.getElementById('link-twitter').textContent = 'Change Twitter';
-    }
+  // ————— FALLBACK POLLING (NO POSTMESSAGE) —————
+  let twitterCheckInterval = null;
+
+  async function startTwitterPolling() {
+    if (twitterCheckInterval) return;
+    twitterCheckInterval = setInterval(() => {
+      const handle = localStorage.getItem('twitter_handle');
+      if (handle) {
+        document.getElementById('twitter-status').textContent = `Linked: @${handle}`;
+        document.getElementById('link-twitter').textContent = 'Change Twitter';
+        clearInterval(twitterCheckInterval);
+        twitterCheckInterval = null;
+      }
+    }, 1000);
   }
 
   document.getElementById('link-twitter').onclick = () => {
@@ -438,27 +444,29 @@
     const popup = window.open(
       `${WORKER_URL}/link-twitter?token=${token}`,
       'twitter-link',
-      'width=600,height=700,scrollbars=yes'
+      'width=600,height=700'
     );
 
-    window.addEventListener('message', function handler(e) {
-      if (e.data === 'twitter_linked') {
-        const handle = localStorage.getItem('twitter_handle');
-        document.getElementById('twitter-status').textContent = `Linked: @${handle}`;
-        document.getElementById('link-twitter').textContent = 'Change Twitter';
-        window.removeEventListener('message', handler);
-      }
-    });
+    // Start polling
+    startTwitterPolling();
 
-    const poll = setInterval(() => {
+    // Fallback: if popup closes without saving, stop polling
+    const checkClosed = setInterval(() => {
       if (popup.closed) {
-        clearInterval(poll);
-        checkTwitterStatus();
+        clearInterval(checkClosed);
+        setTimeout(() => {
+          if (twitterCheckInterval) clearInterval(twitterCheckInterval);
+        }, 2000);
       }
-    }, 800);
+    }, 500);
   };
 
-  checkTwitterStatus();
+  // Initial check
+  const initialHandle = localStorage.getItem('twitter_handle');
+  if (initialHandle) {
+    document.getElementById('twitter-status').textContent = `Linked: @${initialHandle}`;
+    document.getElementById('link-twitter').textContent = 'Change Twitter';
+  }
 </script>
 
   
