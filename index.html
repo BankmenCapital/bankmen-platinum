@@ -349,10 +349,17 @@
       };
     }
 
-    async function loadXP() {
+       async function loadXP() {
       const res = await fetch(`${WORKER_URL}/xp?token=${token}`);
       const data = await res.json();
       currentXP = data.xp || 0;
+
+      // Update Twitter status from user object
+      if (data.twitter) {
+        document.getElementById('twitter-status').textContent = `Linked: @${data.twitter}`;
+        document.getElementById('link-twitter').textContent = 'Change Twitter';
+      }
+
       updateXP();
     }
 
