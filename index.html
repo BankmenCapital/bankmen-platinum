@@ -19,6 +19,11 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
 
+
+
+  
+  
+
   <style>
     html, body { height: 100%; margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; }
     #bg { position: fixed; inset: 0; z-index: -1; }
@@ -155,6 +160,11 @@
         <button id="scroll-right" class="scroll-btn scroll-right-btn rounded-r-full z-10"></button>
       </div>
     </div>
+ <!-- twitter button -->
+    <div class="mb-4">
+  <button id="link-twitter" class="px-4 py-2 bg-blue-600 text-white rounded">Link Twitter</button>
+  <span id="twitter-status" class="ml-2 text-sm text-gray-400">Not linked</span>
+</div>
 
   </div>
 
@@ -408,5 +418,38 @@
 
     waitForPhantom();
   </script>
+
+
+  
+  <script>
+  const token = localStorage.getItem('auth_token'); // ← your existing token
+
+  // Check if Twitter is already linked
+  async function checkTwitter() {
+    if (!token) return;
+    const payload = JSON.parse(atob(token));
+    const handle = await fetch(`https://nft-dashboard-verifier.bankmen-verifier.workers.dev/xp?token=${token}`)
+      .then(r => r.json())
+      .then(() => localStorage.getItem('twitter_handle')); // fallback
+    if (handle) {
+      document.getElementById('twitter-status').textContent = `Linked: @${handle}`;
+      document.getElementById('link-twitter').textContent = 'Change Twitter';
+    }
+  }
+
+  document.getElementById('link-twitter').onclick = () => {
+    if (!token) {
+      alert('Connect wallet first!');
+      return;
+    }
+    const linkUrl = `https://nft-dashboard-verifier.bankmen-verifier.workers.dev/link-twitter?token=${token}`;
+    window.open(linkUrl, 'twitter', 'width=600,height=700');
+  };
+
+  // Auto-check on load
+  checkTwitter();
+</script>
+
+  
 </body>
 </html>
