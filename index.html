@@ -56,24 +56,36 @@
     .level-tile.current { box-shadow: 0 0 24px rgba(251, 191, 36, 0.7); }
 
     .xp-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); transition: width 1.2s ease; }
-    
-    /* ARROW BUTTONS — NO TEXT, PURE SYMBOL */
+
+    /* ARROW BUTTONS — PURE SYMBOLS VIA ::before */
     .scroll-btn {
       width: 48px;
       height: 48px;
       background: rgba(251, 191, 36, 0.2);
       border: 2px solid #fbbf24;
-      font-size: 1.8rem;
-      line-height: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #fbbf24;
-      font-weight: bold;
+      position: relative;
       user-select: none;
+      overflow: hidden;
     }
     .scroll-btn:hover {
       background: rgba(251, 191, 36, 0.4);
+    }
+    .scroll-left-btn::before {
+      content: 'Left Arrow';
+      color: #fbbf24;
+      font-weight: bold;
+      font-size: 1.8rem;
+      position: absolute;
+    }
+    .scroll-right-btn::before {
+      content: 'Right Arrow';
+      color: #fbbf24;
+      font-weight: bold;
+      font-size: 1.8rem;
+      position: absolute;
     }
 
     .xp-pop { position: absolute; font-weight: 900; color: #fbbf24; pointer-events: none; animation: floatUp 1.5s forwards; }
@@ -159,7 +171,7 @@
     <div class="glass m-4 p-6 rounded-xl">
       <div class="flex justify-between items-start mb-4">
         <div>
-          <div class="text-sm text-gray-400">VAULT HOLDER</div>
+          <div class="text-sm text-gray-400">PLATINUM HOLDER</div>
           <div class="text-2xl font-bold"><span id="wallet">????</span></div>
         </div>
         <div class="text-right">
@@ -181,19 +193,19 @@
       <div class="glass w-1/3 p-6 rounded-xl">
         <h2 class="text-2xl font-bold text-yellow-400 mb-4">VAULT NEWS</h2>
         <ul class="space-y-3 text-sm">
-          <li class="glass p-3 rounded">Season 1 LIVE — Daily +10 XP</li>
-          <li class="glass p-3 rounded">Socks Raffle: 48h left</li>
-          <li class="glass p-3 rounded">Alpha Lounge @ Lv 20</li>
+          <li class="glass p-3 rounded">Season 1 Beta is LIVE — Thanks for helping beta test our dashboard! Leave some feedback and try to break things while you're here.</li>
+          <li class="glass p-3 rounded">Community Take Over!</li>
+
         </ul>
       </div>
 
       <div class="glass w-2/3 p-6 rounded-xl relative">
         <h2 class="text-2xl font-bold text-yellow-400 mb-4">WEEKLY CHALLENGES</h2>
         <div class="grid grid-cols-2 gap-4 text-sm mb-12">
-          <div class="glass p-4 rounded">Post swing (+30 XP)</div>
-          <div class="glass p-4 rounded">RT pinned (+20 XP)</div>
-          <div class="glass p-4 rounded">Tag 3 frens (+15 XP)</div>
-          <div class="glass p-4 rounded">Join VC (+25 XP)</div>
+          <div class="glass p-4 rounded">Post a golf swing with #BankmenCapital (+400 XP)</div>
+          <div class="glass p-4 rounded">Like + RT (+100 XP)</div>
+          <div class="glass p-4 rounded">Like + RT (+100 XP)</div>
+          <div class="glass p-4 rounded">Post a GM post with your Bankmen (+200 XP)</div>
         </div>
 
         <!-- DEV + DAILY BUTTONS -->
@@ -208,14 +220,15 @@
       </div>
     </div>
 
-    <!-- BATTLEPASS -->
+    <!-- BATTLEPASS — ARROWS FIXED -->
     <div class="glass mx-4 mb-4 rounded-xl overflow-hidden">
       <div class="flex items-center h-48">
-        <button id="scroll-left" class="scroll-btn rounded-l-full z-10">    </button>
+        <button id="scroll-left" class="scroll-btn scroll-left-btn rounded-l-full z-10"></button>
         <div id="levels-container"></div>
-        <button id="scroll-right" class="scroll-btn rounded-r-full z-10">    </button>
+        <button id="scroll-right" class="scroll-btn scroll-right-btn rounded-r-full z-10"></button>
       </div>
     </div>
+
   </div>
 
   <!-- IMAGE MODAL -->
@@ -225,7 +238,7 @@
   </div>
 
   <script>
-    const PRIZES = [null,"Discord “Vault Verified” role","Phone wallpaper #1","1× Socks Raffle",null,"Desktop wallpaper #1 (4K)",null,"1× Pen Raffle","Phone wallpaper #2",null,"OG BADGE + banner",null,"2× Socks Raffle",null,null,"PRIVATE TRADING LOUNGE",null,null,"Desktop wallpaper #2",null,"ALPHA VAULT channel",null,"3× Coffee Mug Raffle",null,null,"Phone wallpaper #3 (GIF)",null,null,"1× Polo Raffle",null,"HOLDER SPOTLIGHT on X",null,"5× Socks Raffle",null,null,"2× Quarter-Zip Raffle",null,null,"Spotify lo-fi playlist",null,"VAULT LEGEND role",null,null,null,null,"3× Polo Raffle",null,"1× Grand Watch Raffle",null,"Personalized cartoon PFP","10× GRAND WATCH + Vault Overlord"];
+    const PRIZES = [null,"Discord “Platinum” role","Phone wallpaper #1","1× Socks Raffle",null,"Desktop wallpaper #1 (4K)",null,"1× Pen Raffle","Phone wallpaper #2",null,"OG Role",null,"2× Socks Raffle",null,null,"Spotify Playlist",null,null,"Desktop wallpaper #2",null,"ALPHA VAULT channel",null,"3× Coffee Mug Raffle",null,null,"Phone wallpaper #3 (GIF)",null,null,"1× Polo Raffle",null,"HOLDER SPOTLIGHT on X",null,"5× Socks Raffle",null,null,"2× Quarter-Zip Raffle",null,null,"5x Coffee Mug Raffle",null,"Legendary role",null,null,null,null,"3× Polo Raffle",null,"1× Grand Watch Raffle",null,"90s Anime Art Upgrade","10× GRAND WATCH + Overlord Role"];
     const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
     const DISCORD_BOT_URL = "https://bankmen-discord-bot.bankmen-verifier.workers.dev";
     let token = null, pubkey = null, currentXP = 0;
@@ -317,7 +330,7 @@
         if (win.closed) {
           clearInterval(check);
           localStorage.setItem("discord_claimed", "true");
-          alert("Vault Verified role assigned! Check Discord.");
+          alert("Platinum role assigned! Check Discord.");
           const btn = document.querySelector(".level-tile .overlay-btn.discord");
           if (btn) btn.textContent = "CLAIMED";
         }
