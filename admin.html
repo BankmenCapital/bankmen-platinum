@@ -40,85 +40,66 @@
   </div>
 
   <script>
-    const ADMIN_KEY = "your-super-secret-admin-key-12345"; // ← CHANGE TO YOUR KEY
-    const BASE_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
+  const ADMIN_KEY = "4924049830";
+  const BASE_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
 
-    let currentTab = 'missions';
-
-    function showTab(tab) {
-      currentTab = tab;
-      document.getElementById('missions-tab').classList.toggle('hidden', tab !== 'missions');
-      document.getElementById('raffles-tab').classList.toggle('hidden', tab !== 'raffles');
-      if (tab === 'missions') loadMissions();
-      if (tab === 'raffles') loadRaffle();
-    }
-
-    async function loadMissions() {
-      try {
-        const res = await fetch(`${BASE_URL}/missions`);
-        const queue = await res.json();
-        document.getElementById('missions-list').innerHTML = queue.length > 0 ? queue.map(m => `
-          <div class="card flex justify-between items-center">
-            <div>
-              <strong>${m.wallet.slice(0,8)}...</strong><br>
-              <span class="text-blue-400">@${m.twitter || 'Not linked'}</span><br>
-              <a href="${m.url}" target="_blank" class="text-cyan-400 hover:underline">View Post</a>
-            </div>
-            <div class="space-x-2">
-              <button onclick="approveMission('${m.wallet}', '${m.mission}', ${m.xp || 50})" class="approve px-3 py-1 rounded">Approve +${m.xp || 50}</button>
-              <button onclick="denyMission('${m.wallet}', '${m.mission}')" class="deny px-3 py-1 rounded">Deny</button>
-            </div>
+  async function loadMissions() {
+    try {
+      const res = await fetch(`${BASE_URL}/missions`);
+      const queue = await res.json();
+      const list = document.getElementById('missions-list');
+      list.innerHTML = queue.length > 0 ? queue.map(m => `
+        <div class="card flex justify-between items-center">
+          <div>
+            <strong>${m.wallet.slice(0,8)}...</strong><br>
+            <span class="text-blue-400">@${m.twitter || '???'}</span><br>
+            <a href="${m.url}" target="_blank" class="text-cyan-400 hover:underline">View Post</a>
           </div>
-        `).join('') : '<p class="text-gray-400 text-center">No pending missions</p>';
-      } catch (e) {
-        document.getElementById('missions-list').innerHTML = '<p class="text-red-400">Error loading missions</p>';
-      }
-    }
-
-    async function loadRaffle() {
-      const item = document.getElementById('raffle-item').value || 'default';
-      try {
-        const res = await fetch(`${BASE_URL}/raffle-entries?item=${item}`);
-        const entries = await res.json();
-        document.getElementById('raffle-list').innerHTML = entries.length > 0 ? entries.map(e => `
-          <div class="card text-sm">
-            <strong>${e.wallet.slice(0,8)}...</strong> - Level ${e.level} - ${new Date(e.time).toLocaleString()}
+          <div class="space-x-2">
+            <button data-wallet="${m.wallet}" data-mission="${m.mission}" data-xp="${m.xp || 50}" class="approve px-3 py-1 rounded">+${m.xp || 50}</button>
+            <button data-wallet="${m.wallet}" data-mission="${m.mission}" class="deny px-3 py-1 rounded">Deny</button>
           </div>
-        `).join('') : '<p class="text-gray-400 text-center">No entries for "' + item + '"</p>';
-      } catch (e) {
-        document.getElementById('raffle-list').innerHTML = '<p class="text-red-400">Error loading raffles</p>';
-      }
-    }
+        </div>
+      `).join('') : '<p class="text-gray-400 text-center">No pending missions</p>';
 
-    async function approveMission(wallet, mission, xp) {
-      try {
-        await fetch(`${BASE_URL}/approve-mission`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
-          body: JSON.stringify({ wallet, mission, xp })
-        });
-        loadMissions();
-      } catch (e) {
-        alert('Approve failed: ' + e.message);
-      }
-    }
+      // Attach event listeners
+      document.querySelectorAll('.approve').forEach(btn => {
+        btn.onclick = () => {
+          const w = btn.dataset.wallet;
+          const m = btn.dataset.mission;
+          const xp = btn.dataset.xp;
+          approveMission(w, m, xp);
+        };
+      });
+      document.querySelectorAll('.deny').forEach(btn => {
+        btn.onclick = () => denyMission(btn.dataset.wallet, btn.dataset.mission);
+      });
 
-    async function denyMission(wallet, mission) {
-      try {
-        await fetch(`${BASE_URL}/deny-mission`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
-          body: JSON.stringify({ wallet, mission })
-        });
-        loadMissions();
-      } catch (e) {
-        alert('Deny failed: ' + e.message);
-      }
+    } catch (e) {
+      document.getElementById('missions-list').innerHTML = '<p class="text-red-400">Error</p>';
     }
+  }
 
-    // Init
+  async function approveMission(wallet, mission, xp) {
+    await fetch(`${BASE_URL}/approve-mission`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+      body: JSON.stringify({ wallet, mission, xp })
+    });
     loadMissions();
-    setInterval(loadMissions, 10000);
-  </script>
+  }
+
+  async function denyMission(wallet, mission) {
+    await fetch(`${BASE_URL}/deny-mission`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+      body: JSON.stringify({ wallet, mission })
+    });
+    loadMissions();
+  }
+
+  loadMissions();
+  setInterval(loadMissions, 10000);
+</script>
 </body>
 </html>
