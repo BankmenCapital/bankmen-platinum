@@ -422,32 +422,35 @@
 
   
 <script>
-  /* --------------------------------------------------------------
-     TWITTER LINK – FIXED (uses the token you already have from Phantom)
-     -------------------------------------------------------------- */
-  // token is already declared in the main script above (`let token = null;`)
-  // we **do not** re-declare it here.
-
-  // Check if Twitter is already linked
+  // ——————— TWITTER LINK (FIXED) ———————
   async function checkTwitterStatus() {
-    if (!token) return;                                   // no wallet yet
+    if (!token) return;
     const stored = localStorage.getItem('twitter_handle');
     if (stored) {
       document.getElementById('twitter-status').textContent = `Linked: @${stored}`;
-      document.getElementById('link-twitter').textContent   = 'Change Twitter';
+      document.getElementById('link-twitter').textContent = 'Change Twitter';
     }
   }
 
-  // Open the OAuth popup
   document.getElementById('link-twitter').onclick = () => {
-    if (!token) {
-      alert('Please connect your wallet first!');
-      return;
-    }
-    const url = `${WORKER_URL}/link-twitter?token=${token}`;
-    const popup = window.open(url, 'twitter-link', 'width=600,height=700,scrollbars=yes');
+    if (!token) return alert('Connect wallet first!');
+    const popup = window.open(
+      `${WORKER_URL}/link-twitter?token=${token}`,
+      'twitter-link',
+      'width=600,height=700'
+    );
 
-    // When the popup closes, refresh the status
+    // Listen for success message
+    window.addEventListener('message', function handler(e) {
+      if (e.data === 'twitter_linked') {
+        const handle = localStorage.getItem('twitter_handle');
+        document.getElementById('twitter-status').textContent = `Linked: @${handle}`;
+        document.getElementById('link-twitter').textContent = 'Change Twitter';
+        window.removeEventListener('message', handler);
+      }
+    });
+
+    // Fallback: poll if closed
     const poll = setInterval(() => {
       if (popup.closed) {
         clearInterval(poll);
@@ -456,7 +459,6 @@
     }, 800);
   };
 
-  // Run on page load (after the main script has set `token`)
   checkTwitterStatus();
 </script>
 
