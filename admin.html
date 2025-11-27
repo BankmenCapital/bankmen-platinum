@@ -1,95 +1,171 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bankmen Admin - Missions & Raffles</title>
+  <title>Bankmen Platinum Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
-    body { background: #111; color: white; font-family: sans-serif; }
-    .card { background: #222; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
-    button { background: #fbbf24; color: black; padding: 0.5rem 1rem; border-radius: 9999px; font-weight: bold; transition: all 0.2s; }
-    button:hover { background: #f59e0b; }
-    .approve { background: #10b981; color: white; }
-    .deny { background: #ef4444; color: white; }
+    body { background: linear-gradient(135deg, #0f0f23, #1a1a2e); color: #fbbf24; font-family: 'Inter', sans-serif; min-height: 100vh; }
+    .glass { background: rgba(30, 30, 60, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(251, 191, 36, 0.3); }
+    .tab { @apply px-6 py-3 bg-gray-800 hover:bg-gray-700 cursor-pointer font-bold transition; }
+    .tab.active { @apply bg-yellow-500 text-black; }
+    .btn { @apply px-4 py-2 rounded font-bold transition; }
+    .approve { @apply bg-emerald-600 hover:bg-emerald-500 text-white; }
+    .deny { @apply bg-red-600 hover:bg-red-500 text-white; }
+    .reset { @apply bg-purple-600 hover:bg-purple-500 text-white; }
+    .danger { @apply bg-red-700 hover:bg-red-600 text-white; }
+    table { @apply w-full text-left border-collapse; }
+    th { @apply bg-gray-800 p-3 font-bold text-yellow-400; }
+    td { @apply p-3 border-t border-gray-700; }
+    tr:hover { @apply bg-gray-800/50; }
   </style>
 </head>
-<body class="p-8">
-  <h1 class="text-3xl font-bold mb-6">Bankmen Admin Dashboard</h1>
+<body class="text-white">
 
-  <!-- Tabs -->
-  <div class="mb-6">
-    <button onclick="showTab('missions')" class="px-4 py-2 bg-blue-600 rounded-l-md">Missions</button>
-    <button onclick="showTab('raffles')" class="px-4 py-2 bg-gray-600 rounded-r-md">Raffles</button>
+<div class="max-w-7xl mx-auto p-6">
+  <h1 class="text-5xl font-black text-center mb-2 text-yellow-400">BANKMEN PLATINUM</h1>
+  <p class="text-center text-gray-400 mb-8">Admin Dashboard — Season 1</p>
+
+  <!-- TABS -->
+  <div class="flex justify-center space-x-1 mb-8 overflow-x-auto">
+    <div class="tab active" data-tab="users">Users</div>
+    <div class="tab" data-tab="missions">Missions</div>
+    <div class="tab" data-tab="raffles">Raffles</div>
+    <div class="tab" data-tab="tools">Tools</div>
   </div>
 
-  <!-- Missions Tab -->
-  <div id="missions-tab" class="space-y-4">
-    <h2 class="text-xl font-bold mb-4">Mission Submissions</h2>
-    <div id="missions-list"></div>
-  </div>
-
-  <!-- Raffles Tab -->
-  <div id="raffles-tab" class="space-y-4 hidden">
-    <h2 class="text-xl font-bold mb-4">Raffle Entries</h2>
-    <div class="flex gap-2 mb-4">
-      <input id="raffle-item" placeholder="Item name (e.g. socks, polo)" class="p-2 bg-gray-700 rounded text-white">
-      <button onclick="loadRaffle()" class="px-4 py-2 bg-indigo-600 rounded">Load</button>
+  <!-- USERS TAB -->
+  <div id="users" class="tab-content">
+    <input type="text" id="search-users" placeholder="Search wallet or @handle..." class="w-full p-4 glass rounded-lg mb-6 text-white placeholder-gray-400">
+    <div class="glass rounded-xl overflow-hidden">
+      <table id="users-table">
+        <thead>
+          <tr>
+            <th>Wallet</th>
+            <th>XP</th>
+            <th>Level</th>
+            <th>Twitter</th>
+            <th>Discord</th>
+            <th>Raffles</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
-    <div id="raffle-list"></div>
   </div>
 
-  <script>
-  const ADMIN_KEY = "4924049830";
+  <!-- MISSIONS TAB -->
+  <div id="missions" class="tab-content hidden">
+    <h2 class="text-2xl font-bold mb-4">Pending X Submissions</h2>
+    <div id="missions-list" class="space-y-4"></div>
+  </div>
+
+  <!-- RAFFLES TAB -->
+  <div id="raffles" class="tab-content hidden">
+    <h2 class="text-2xl font-bold mb-4">Raffle Entries</h2>
+    <div class="flex gap-3 mb-6 flex-wrap">
+      <button onclick="loadRaffle('socks')" class="btn bg-indigo-600 hover:bg-indigo-500">Socks</button>
+      <button onclick="loadRaffle('pen')" class="btn bg-pink-600 hover:bg-pink-500">Pen</button>
+      <button onclick="loadRaffle('polo')" class="btn bg-teal-600 hover:bg-teal-500">Polo</button>
+      <button onclick="loadRaffle('mug')" class="btn bg-orange-600 hover:bg-orange-500">Mug</button>
+      <button onclick="loadRaffle('watch')" class="btn bg-purple-700 hover:bg-purple-600">Watch</button>
+    </div>
+    <div id="raffle-list" class="glass p-6 rounded-xl"></div>
+  </div>
+
+  <!-- TOOLS TAB -->
+  <div id="tools" class="tab-content hidden">
+    <h2 class="text-2xl font-bold mb-6">Admin Tools</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-xl font-bold mb-4">Reset Individual User</h3>
+        <input id="reset-wallet" placeholder="Enter wallet address" class="w-full p-3 glass rounded mb-4">
+        <button onclick="resetUser()" class="w-full reset">Reset This User</button>
+      </div>
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-xl font-bold mb-4 text-red-400">DANGER ZONE</h3>
+        <p class="mb-4 text-gray-300">Reset ALL users (new season)</p>
+        <button onclick="resetAll()" class="w-full danger">RESET ENTIRE SEASON</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ADMIN_KEY = "4924049830"; // ← Change if needed
   const BASE_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
 
-  async function loadMissions() {
-    try {
-      const res = await fetch(`${BASE_URL}/missions`);
-      const queue = await res.json();
-      const list = document.getElementById('missions-list');
-      list.innerHTML = queue.length > 0 ? queue.map(m => `
-        <div class="card flex justify-between items-center">
-          <div>
-            <strong>${m.wallet.slice(0,8)}...</strong><br>
-            <span class="text-blue-400">@${m.twitter || '???'}</span><br>
-            <a href="${m.url}" target="_blank" class="text-cyan-400 hover:underline">View Post</a>
-          </div>
-          <div class="space-x-2">
-            <button data-wallet="${m.wallet}" data-mission="${m.mission}" data-xp="${m.xp || 50}" class="approve px-3 py-1 rounded">+${m.xp || 50}</button>
-            <button data-wallet="${m.wallet}" data-mission="${m.mission}" class="deny px-3 py-1 rounded">Deny</button>
-          </div>
-        </div>
-      `).join('') : '<p class="text-gray-400 text-center">No pending missions</p>';
+  // Tab switching
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.onclick = () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.tab).classList.remove('hidden');
+      if (tab.dataset.tab === 'users') loadUsers();
+      if (tab.dataset.tab === 'missions') loadMissions();
+    };
+  });
 
-      // Attach event listeners
-      document.querySelectorAll('.approve').forEach(btn => {
-        btn.onclick = () => {
-          const w = btn.dataset.wallet;
-          const m = btn.dataset.mission;
-          const xp = btn.dataset.xp;
-          approveMission(w, m, xp);
-        };
-      });
-      document.querySelectorAll('.deny').forEach(btn => {
-        btn.onclick = () => denyMission(btn.dataset.wallet, btn.dataset.mission);
-      });
+  // Load all users
+  async function loadUsers() {
+    const res = await fetch(`${BASE_URL}/all-users`, { headers: { 'X-Admin-Key': ADMIN_KEY } });
+    const users = await res.json();
+    const tbody = document.querySelector('#users-table tbody');
+    const search = document.getElementById('search-users').value.toLowerCase();
 
-    } catch (e) {
-      document.getElementById('missions-list').innerHTML = '<p class="text-red-400">Error</p>';
-    }
+    const filtered = users.filter(u => 
+      u.wallet.toLowerCase().includes(search) || 
+      (u.twitter && u.twitter.toLowerCase().includes(search))
+    );
+
+    tbody.innerHTML = filtered.map(u => `
+      <tr>
+        <td class="font-mono text-sm">${u.wallet.slice(0,8)}...${u.wallet.slice(-6)}</td>
+        <td>${u.xp || 0}</td>
+        <td>${Math.floor((u.xp || 0)/200) + 1}</td>
+        <td>${u.twitter ? `@${u.twitter}` : '—'}</td>
+        <td>${u.discord ? u.discord : '—'}</td>
+        <td>${u.raffleCount || 0}</td>
+        <td>
+          <button onclick="resetUser('${u.wallet}')" class="text-xs reset px-3 py-1">Reset</button>
+        </td>
+      </tr>
+    `).join('');
   }
 
-  async function approveMission(wallet, mission, xp) {
+  // Load missions
+  async function loadMissions() {
+    const res = await fetch(`${BASE_URL}/missions`);
+    const queue = await res.json();
+    document.getElementById('missions-list').innerHTML = queue.length ? queue.map(m => `
+      <div class="glass p-4 rounded-lg flex justify-between items-center">
+        <div>
+          <strong>${m.wallet.slice(0,8)}...</strong> • 
+          <span class="text-cyan-400">@${m.twitter || '???'}</span><br>
+          <a href="${m.url}" target="_blank" class="text-yellow-400 underline">View Post</a>
+        </div>
+        <div class="space-x-3">
+          <button onclick="approve('${m.wallet}','${m.mission}')" class="approve">+200 XP</button>
+          <button onclick="deny('${m.wallet}','${m.mission}')" class="deny">Deny</button>
+        </div>
+      </div>
+    `).join('') : '<p class="text-center text-gray-500">No pending submissions</p>';
+  }
+
+  async function approve(wallet, mission) {
     await fetch(`${BASE_URL}/approve-mission`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
-      body: JSON.stringify({ wallet, mission, xp })
+      body: JSON.stringify({ wallet, mission, xp: 200 })
     });
     loadMissions();
   }
 
-  async function denyMission(wallet, mission) {
+  async function deny(wallet, mission) {
     await fetch(`${BASE_URL}/deny-mission`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
@@ -98,8 +174,52 @@
     loadMissions();
   }
 
-  loadMissions();
-  setInterval(loadMissions, 10000);
+  async function loadRaffle(item) {
+    const res = await fetch(`${BASE_URL}/raffle-entries?item=${item}`);
+    const entries = await res.json();
+    document.getElementById('raffle-list').innerHTML = `
+      <h3 class="text-xl font-bold mb-4">${item.toUpperCase()} RAFFLE (${entries.length} entries)</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        ${entries.map(e => `<div class="bg-gray-800 p-3 rounded text-center text-sm font-mono">${e.wallet.slice(0,8)}...</div>`).join('')}
+      </div>
+    `;
+  }
+
+  async function resetUser(wallet) {
+    if (!wallet) wallet = document.getElementById('reset-wallet').value.trim();
+    if (!wallet || !confirm(`Reset ${wallet.slice(0,8)}...?`)) return;
+    await fetch(`${BASE_URL}/reset-user`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+      body: JSON.stringify({ wallet })
+    });
+    loadUsers();
+  }
+
+  async function resetAll() {
+    if (!confirm("⚠️ RESET ENTIRE SEASON? This cannot be undone.")) return;
+    if (!confirm("LAST CHANCE. Type 'RESET SEASON' to confirm.")) return;
+    if (prompt("Type exactly: RESET SEASON") !== "RESET SEASON") return;
+    await fetch(`${BASE_URL}/reset-all`, {
+      method: 'POST',
+      headers: { 'X-Admin-Key': ADMIN_KEY }
+    });
+    alert("Season reset!");
+    loadUsers();
+  }
+
+  // Search
+  document.getElementById('search-users').addEventListener('input', loadUsers);
+
+  // Auto refresh
+  setInterval(() => {
+    const active = document.querySelector('.tab.active').dataset.tab;
+    if (active === 'users') loadUsers();
+    if (active === 'missions') loadMissions();
+  }, 8000);
+
+  // Load users on start
+  loadUsers();
 </script>
 </body>
 </html>
