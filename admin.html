@@ -195,12 +195,12 @@
 
   // Search + Auto-refresh
   document.getElementById('search').addEventListener('input', loadUsers);
-  setInterval(() => {
-    const active = document.querySelector('.tab.active')?.dataset.tab;
-    if (active === 'users') loadUsers();
-    if (active === 'missions') loadMissions();
-  }, 10000);
-
+ setInterval(() => {
+  const active = document.querySelector('.tab.active')?.dataset.tab;
+  if (active === 'users') loadUsers();
+  if (active === 'missions') loadMissions();
+}, 60000);   // ← now every 60 seconds (safe + smooth)
+  
   // Initial load
   loadUsers();
 </script>
