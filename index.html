@@ -433,6 +433,24 @@
       document.getElementById("scroll-right").onclick = () => container.scrollBy({ left:  jump, behavior: "smooth" });
     }
 
+
+
+        // AUTO CHECK RAFFLE UNLOCKS ON EVERY PAGE LOAD
+async function autoCheckRaffle() {
+  const token = localStorage.getItem('token');
+  if (token) {
+    await fetch("https://nft-dashboard-verifier.bankmen-verifier.workers.dev/check-raffle-unlocks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token })
+    });
+  }
+}
+autoCheckRaffle();  // ← run on login/load
+        
+
+        
+
     waitForPhantom();
   </script>
 
