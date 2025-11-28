@@ -10,7 +10,7 @@
     .glass { background: rgba(30,30,60,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(251,191,36,0.3); }
     .tab { @apply px-6 py-3 bg-gray-800 hover:bg-gray-700 cursor-pointer font-bold transition rounded-t-lg; }
     .tab.active { @apply bg-yellow-500 text-black; }
-    .btn { @apply px-4 py-2 rounded font-bold transition; }
+    .btn { @apply px-5 py-2 rounded font-bold transition; }
     .approve { @apply bg-emerald-600 hover:bg-emerald-500 text-white; }
     .deny { @apply bg-red-600 hover:bg-red-500 text-white; }
     .reset { @apply bg-purple-600 hover:bg-purple-500 text-white text-xs; }
@@ -19,7 +19,7 @@
     th { @apply bg-gray-800 p-4 font-bold text-yellow-400 text-sm uppercase tracking-wider; }
     td { @apply p-4 border-t border-gray-700 text-sm; }
     tr:hover { @apply bg-gray-800/50; }
-    .card { @apply glass p-5 rounded-xl shadow-xl; }
+    .card { @apply glass p-6 rounded-xl shadow-xl; }
   </style>
 </head>
 <body class="text-white">
@@ -28,6 +28,7 @@
   <h1 class="text-5xl font-black text-center mb-2 text-yellow-400 drop-shadow-lg">BANKMEN PLATINUM</h1>
   <p class="text-center text-gray-400 mb-10 text-lg">Admin Dashboard — Full Control</p>
 
+  <!-- TABS -->
   <div class="flex justify-center space-x-1 mb-10 overflow-x-auto bg-gray-900/50 p-1 rounded-lg">
     <div class="tab active" data-tab="users">Users</div>
     <div class="tab" data-tab="missions">Missions</div>
@@ -35,26 +36,34 @@
     <div class="tab" data-tab="tools">Tools</div>
   </div>
 
-  <!-- USERS -->
+  <!-- USERS TAB -->
   <div id="users" class="tab-content">
     <input type="text" id="search-users" placeholder="Search wallet or @handle..." class="w-full p-4 glass rounded-lg mb-6 text-white placeholder-gray-400 text-lg">
     <div class="glass rounded-xl overflow-hidden shadow-2xl overflow-x-auto">
       <table id="users-table">
-        <thead><tr>
-          <th>Wallet</th><th>XP</th><th>Level</th><th>Twitter</th><th>Discord</th><th>Raffle Entries</th><th>Action</th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th>Wallet</th>
+            <th>XP</th>
+            <th>Level</th>
+            <th>Twitter</th>
+            <th>Discord</th>
+            <th>Raffle Entries</th>
+            <th>Action</th>
+          </tr>
+        </thead>
         <tbody class="text-gray-300"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- MISSIONS -->
+  <!-- MISSIONS TAB -->
   <div id="missions" class="tab-content hidden">
     <h2 class="text-3xl font-bold mb-6 text-yellow-400">Pending X Submissions</h2>
     <div id="missions-list" class="space-y-5"></div>
   </div>
 
-  <!-- RAFFLES -->
+  <!-- RAFFLES TAB -->
   <div id="raffles" class="tab-content hidden">
     <h2 class="text-3xl font-bold mb-6 text-yellow-400">Raffle Entries</h2>
     <div class="flex flex-wrap gap-4 mb-8">
@@ -64,10 +73,10 @@
       <button onclick="loadRaffle('mug')" class="btn bg-orange-600 hover:bg-orange-500">Mug</button>
       <button onclick="loadRaffle('watch')" class="btn bg-purple-700 hover:bg-purple-600">Watch</button>
     </div>
-    <div id="raffle-list" class="glass p-8 rounded-xl text-center"></div>
+    <div id="raffle-list" class="glass p-8 rounded-xl text-center text-gray-400"></div>
   </div>
 
-  <!-- TOOLS -->
+  <!-- TOOLS TAB -->
   <div id="tools" class="tab-content hidden">
     <h2 class="text-3xl font-bold mb-8 text-yellow-400">Admin Tools</h2>
     <div class="grid md:grid-cols-2 gap-8">
@@ -86,9 +95,10 @@
 </div>
 
 <script>
-  const ADMIN_KEY = "4924049830";
+  const ADMIN_KEY = "4924049830";                    // ← Must match Worker
   const BASE_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
 
+  // Tab switching
   document.querySelectorAll('.tab').forEach(tab => {
     tab.onclick = () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -100,60 +110,80 @@
     };
   });
 
+  // Load Users (with bulletproof error handling)
   async function loadUsers() {
     try {
-      const res = await fetch(`${BASE_URL}/all-users`, { headers: { 'X-Admin-Key': ADMIN_KEY } });
-      if (!res.ok) throw new Error("Failed");
+      const res = await fetch(`${BASE_URL}/all-users`, {
+        headers: { 'X-Admin-Key': ADMIN_KEY }
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`HTTP ${res.status} — ${text}`);
+      }
+
       const users = await res.json();
 
       const search = document.getElementById('search-users').value.toLowerCase();
-      const filtered = users.filter(u => 
-        u.wallet.toLowerCase().includes(search) || 
+      const filtered = users.filter(u =>
+        u.wallet.toLowerCase().includes(search) ||
         (u.twitter && u.twitter.toLowerCase().includes(search))
       );
 
-      document.querySelector('#users-table tbody').innerHTML = filtered.length ? filtered.map(u => `
+      const tbody = document.querySelector('#users-table tbody');
+      tbody.innerHTML = filtered.length ? filtered.map(u => `
         <tr>
-          <td class="font-mono">${u.wallet.slice(0,10)}...${u.wallet.slice(-8)}</td>
-          <td class="text-right font-bold">${u.xp || 0}</td>
+          <td class="font-mono text-xs">${u.wallet.slice(0,8)}...${u.wallet.slice(-6)}</td>
+          <td class="text-right font-bold text-yellow-400">${u.xp || 0}</td>
           <td class="text-right">${u.level || 1}</td>
           <td>${u.twitter ? `<span class="text-cyan-400">@${u.twitter}</span>` : '—'}</td>
           <td>${u.discord || '—'}</td>
-          <td class="text-right">${u.raffleCount || 0}</td>
-          <td><button onclick="resetSingleUser('${u.wallet}')" class="reset px-4 py-1">Reset</button></td>
+          <td class="text-right font-bold text-green-400">${u.raffleCount || 0}</td>
+          <td><button onclick="resetSingleUser('${u.wallet}')" class="reset px-3 py-1 rounded">Reset</button></td>
         </tr>
-      `).join('') : '<tr><td colspan="7" class="text-center py-12 text-gray-500">No users found</td></tr>';
-    } catch (e) {
-      document.querySelector('#users-table tbody').innerHTML = '<tr><td colspan="7" class="text-center py-12 text-red-400">Error — check /all-users endpoint</td></tr>';
+      `).join('') : '<tr><td colspan="7" class="text-center py-12 text-gray-500">No users yet — connect a wallet first</td></tr>';
+
+    } catch (err) {
+      console.error("Load users failed:", err);
+      document.querySelector('#users-table tbody').innerHTML = `
+        <tr><td colspan="7" class="text-center py-12 text-red-400">
+          Failed to load users<br><small>${err.message}</small>
+        </td></tr>`;
     }
   }
 
+  // Load Missions
   async function loadMissions() {
-    const res = await fetch(`${BASE_URL}/missions`);
-    const queue = await res.json();
-    document.getElementById('missions-list').innerHTML = queue.length ? queue.map(m => `
-      <div class="card flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <div class="font-bold text-lg">${m.wallet.slice(0,10)}...${m.wallet.slice(-8)}</div>
-          <div class="text-cyan-400">@${m.twitter || '???'}</div>
-          <a href="${m.url}" target="_blank" class="text-yellow-400 underline">View X Post</a>
+    try {
+      const res = await fetch(`${BASE_URL}/missions`);
+      const queue = await res.json();
+      document.getElementById('missions-list').innerHTML = queue.length ? queue.map(m => `
+        <div class="card flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <div class="font-bold text-lg">${m.wallet.slice(0,10)}...${m.wallet.slice(-8)}</div>
+            <div class="text-cyan-400">@${m.twitter || '???'}</div>
+            <a href="${m.url}" target="_blank" class="text-yellow-400 underline hover:text-yellow-300">View X Post</a>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="approve('${m.wallet}','${m.mission}')" class="approve px-6 py-3 text-lg">+200 XP</button>
+            <button onclick="deny('${m.wallet}','${m.mission}')" class="deny px-6 py-3 text-lg">Deny</button>
+          </div>
         </div>
-        <div class="flex gap-3">
-          <button onclick="approve('${m.wallet}','${m.mission}')" class="approve px-6 py-3">+200 XP</button>
-          <button onclick="deny('${m.wallet}','${m.mission}')" class="deny px-6 py-3">Deny</button>
-        </div>
-      </div>
-    `).join('') : '<div class="text-center py-16 text-gray-500 text-xl">No pending submissions</div>';
+      `).join('') : '<div class="text-center py-16 text-gray-500 text-xl">No pending submissions</div>';
+    } catch (e) {
+      document.getElementById('missions-list').innerHTML = '<div class="text-red-400 text-center py-16">Error loading missions</div>';
+    }
   }
 
-  async function approve(w,m) { await fetch(`${BASE_URL}/approve-mission`, {method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':ADMIN_KEY},body:JSON.stringify({wallet:w,mission:m,xp:200})}); loadMissions(); }
-  async function deny(w,m)   { await fetch(`${BASE_URL}/deny-mission`,   {method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':ADMIN_KEY},body:JSON.stringify({wallet:w,mission:m})}); loadMissions(); }
+  // Quick actions
+  const approve = async (w,m) => { await fetch(`${BASE_URL}/approve-mission`, {method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':ADMIN_KEY},body:JSON.stringify({wallet:w,mission:m,xp:200})}); loadMissions(); };
+  const deny   = async (w,m) => { await fetch(`${BASE_URL}/deny-mission`,   {method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':ADMIN_KEY},body:JSON.stringify({wallet:w,mission:m})}); loadMissions(); };
 
   async function loadRaffle(item) {
     const res = await fetch(`${BASE_URL}/raffle-entries?item=${item}`);
     const entries = await res.json();
     document.getElementById('raffle-list').innerHTML = `
-      <h3 class="text-2xl font-bold mb-6">${item.toUpperCase()} — ${entries.length} entries</h3>
+      <h3 class="text-2xl font-bold mb-6 text-yellow-400">${item.toUpperCase()} — ${entries.length} entries</h3>
       <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-sm">
         ${entries.map(e => `<div class="bg-gray-800 p-4 rounded font-mono text-center">${e.wallet.slice(0,10)}...</div>`).join('')}
       </div>`;
@@ -161,7 +191,8 @@
 
   async function resetSingleUser(wallet) {
     if (!wallet) wallet = document.getElementById('reset-wallet-input').value.trim();
-    if (!wallet || !confirm(`Reset ${wallet.slice(0,10)}...?`)) return;
+    if (!wallet) return alert("Enter a wallet");
+    if (!confirm(`Reset ${wallet.slice(0,10)}... to 0 XP?`)) return;
     await fetch(`${BASE_URL}/reset-user`, {method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':ADMIN_KEY},body:JSON.stringify({wallet})});
     loadUsers();
   }
@@ -174,10 +205,15 @@
     loadUsers();
   }
 
-  document.getElementById('search-users').addEventListener('input', loadUsers);
-  setInterval(() => { if (document.querySelector('.tab.active').dataset.tab === 'users') loadUsers(); }, 8000);
+  // Search + Auto-refresh
+  document.getElementById('search-users').addEventListener('input', () => loadUsers());
+  setInterval(() => {
+    if (document.querySelector('.tab.active').dataset.tab === 'users') loadUsers();
+    if (document.querySelector('.tab.active').dataset.tab === 'missions') loadMissions();
+  }, 8000);
 
-  loadUsers(); // initial load
+  // Initial load
+  loadUsers();
 </script>
 </body>
 </html>
