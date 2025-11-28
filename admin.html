@@ -20,6 +20,7 @@
     td { @apply p-4 border-t border-gray-700 text-sm; }
     tr:hover { @apply bg-gray-800/50; }
     .card { @apply glass p-6 rounded-xl shadow-xl; }
+    .raffle-tag { @apply px-2 py-1 text-xs rounded font-bold; }
   </style>
 </head>
 <body class="text-white">
@@ -35,21 +36,34 @@
     <div class="tab" data-tab="tools">Tools</div>
   </div>
 
+  <!-- USERS -->
   <div id="users" class="tab-content">
     <input type="text" id="search-users" placeholder="Search wallet or @handle..." class="w-full p-4 glass rounded-lg mb-6 text-white placeholder-gray-400 text-lg">
     <div class="glass rounded-xl overflow-hidden shadow-2xl overflow-x-auto">
       <table id="users-table">
-        <thead><tr><th>Wallet</th><th>XP</th><th>Level</th><th>Twitter</th><th>Discord</th><th>Raffle Entries</th><th>Action</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Wallet</th>
+            <th>XP</th>
+            <th>Level</th>
+            <th>Twitter</th>
+            <th>Total Tickets</th>
+            <th>Raffle Items</th>
+            <th>Action</th>
+          </tr>
+        </thead>
         <tbody class="text-gray-300"></tbody>
       </table>
     </div>
   </div>
 
+  <!-- MISSIONS -->
   <div id="missions" class="tab-content hidden">
     <h2 class="text-3xl font-bold mb-6 text-yellow-400">Pending X Submissions</h2>
     <div id="missions-list" class="space-y-5"></div>
   </div>
 
+  <!-- RAFFLES -->
   <div id="raffles" class="tab-content hidden">
     <h2 class="text-3xl font-bold mb-6 text-yellow-400">Raffle Entries</h2>
     <div class="flex flex-wrap gap-4 mb-8">
@@ -62,6 +76,7 @@
     <div id="raffle-list" class="glass p-8 rounded-xl text-center text-gray-400"></div>
   </div>
 
+  <!-- TOOLS -->
   <div id="tools" class="tab-content hidden">
     <h2 class="text-3xl font-bold mb-8 text-yellow-400">Admin Tools</h2>
     <div class="grid md:grid-cols-2 gap-8">
@@ -99,19 +114,34 @@
       const res = await fetch(`${BASE_URL}/all-users`, { headers: { 'X-Admin-Key': ADMIN_KEY } });
       if (!res.ok) throw new Error(await res.text());
       const users = await res.json();
+
       const search = document.getElementById('search-users').value.toLowerCase();
-      const filtered = users.filter(u => u.wallet.toLowerCase().includes(search) || (u.twitter && u.twitter.toLowerCase().includes(search)));
-      document.querySelector('#users-table tbody').innerHTML = filtered.map(u => `
-        <tr>
-          <td class="font-mono text-xs">${u.wallet.slice(0,8)}...${u.wallet.slice(-6)}</td>
-          <td class="text-right font-bold text-yellow-400">${u.xp}</td>
-          <td class="text-right">${u.level}</td>
-          <td>${u.twitter ? `@${u.twitter}` : '—'}</td>
-          <td>${u.discord || '—'}</td>
-          <td class="text-right font-bold text-green-400">${u.raffleCount}</td>
-          <td><button onclick="resetSingleUser('${u.wallet}')" class="reset px-3 py-1 rounded">Reset</button></td>
-        </tr>
-      `).join('') || '<tr><td colspan="7" class="text-center py-12 text-gray-500">No users yet</td></tr>';
+      const filtered = users.filter(u =>
+        u.wallet.toLowerCase().includes(search) ||
+        (u.twitter && u.twitter.toLowerCase().includes(search))
+      );
+
+      document.querySelector('#users-table tbody').innerHTML = filtered.map(u => {
+        const r = u.raffles || {};
+        const total = u.raffleCount || 0;
+        const tags = Object.entries(r).map(([item, count]) => {
+          const colors = { socks: "bg-indigo-600", pen: "bg-pink-600", polo: "bg-teal-600", mug: "bg-orange-600", watch: "bg-purple-600" };
+          return `<span class="raffle-tag ${colors[item] || 'bg-gray-600'} text-white">${item}: ${count}</span>`;
+        }).join(' ');
+
+        return `
+          <tr>
+            <td class="font-mono text-xs">${u.wallet.slice(0,8)}...${u.wallet.slice(-6)}</td>
+            <td class="text-right font-bold text-yellow-400">${u.xp}</td>
+            <td class="text-right">${u.level}</td>
+            <td>${u.twitter ? `@${u.twitter}` : '—'}</td>
+            <td class="text-right font-bold text-green-400">${total}</td>
+            <td>${tags || '—'}</td>
+            <td><button onclick="resetSingleUser('${u.wallet}')" class="reset px-3 py-1 rounded">Reset</button></td>
+          </tr>
+        `;
+      }).join('') || '<tr><td colspan="7" class="text-center py-12 text-gray-500">No users yet</td></tr>';
+
     } catch (e) {
       document.querySelector('#users-table tbody').innerHTML = `<tr><td colspan="7" class="text-center py-12 text-red-400">Error: ${e.message}</td></tr>`;
     }
@@ -138,7 +168,11 @@
   async function loadRaffle(item) {
     const res = await fetch(`${BASE_URL}/raffle-entries?item=${item}`);
     const entries = await res.json();
-    document.getElementById('raffle-list').innerHTML = `<h3 class="text-2xl font-bold mb-6 text-yellow-400">${item.toUpperCase()} — ${entries.length} entries</h3><div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-sm">${entries.map(e=>`<div class="bg-gray-800 p-4 rounded font-mono text-center">${e.wallet.slice(0,10)}...</div>`).join('')}</div>`;
+    document.getElementById('raffle-list').innerHTML = `
+      <h3 class="text-2xl font-bold mb-6 text-yellow-400">${item.toUpperCase()} — ${entries.length} entries</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-sm">
+        ${entries.map(e => `<div class="bg-gray-800 p-4 rounded font-mono text-center">${e.wallet.slice(0,10)}...</div>`).join('')}
+      </div>`;
   }
 
   function resetSingleUser(w) {
