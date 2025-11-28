@@ -10,37 +10,32 @@
     .glass { background: rgba(30,30,60,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(251,191,36,0.3); }
     .tab { @apply px-6 py-3 bg-gray-800 hover:bg-gray-700 cursor-pointer font-bold transition rounded-t-lg; }
     .tab.active { @apply bg-yellow-500 text-black; }
-    .btn { @apply px-5 py-2 rounded font-bold transition; }
-    .approve { @apply bg-emerald-600 hover:bg-emerald-500 text-white; }
-    .deny { @apply bg-red-600 hover:bg-red-500 text-white; }
-    .reset { @apply bg-purple-600 hover:bg-purple-500 text-white text-xs; }
+    .reset { @apply bg-purple-600 hover:bg-purple-500 text-white text-xs px-3 py-1 rounded; }
     .danger { @apply bg-red-700 hover:bg-red-600 text-white; }
     table { @apply w-full text-left border-collapse; }
     th { @apply bg-gray-800 p-4 font-bold text-yellow-400 text-sm uppercase tracking-wider; }
     td { @apply p-4 border-t border-gray-700 text-sm; }
     tr:hover { @apply bg-gray-800/50; }
-    .card { @apply glass p-6 rounded-xl shadow-xl; }
-    .raffle-tag { @apply px-2 py-1 text-xs rounded font-bold; }
+    .tag { @apply inline-block px-2 py-1 text-xs font-bold rounded text-white; }
   </style>
 </head>
 <body class="text-white">
 
 <div class="max-w-7xl mx-auto p-6">
   <h1 class="text-5xl font-black text-center mb-2 text-yellow-400 drop-shadow-lg">BANKMEN PLATINUM</h1>
-  <p class="text-center text-gray-400 mb-10 text-lg">Admin Dashboard — Full Control</p>
+  <p class="text-center text-gray-400 mb-10 text-lg">Admin Dashboard — Everything Works</p>
 
   <div class="flex justify-center space-x-1 mb-10 overflow-x-auto bg-gray-900/50 p-1 rounded-lg">
     <div class="tab active" data-tab="users">Users</div>
     <div class="tab" data-tab="missions">Missions</div>
-    <div class="tab" data-tab="raffles">Raffles</div>
     <div class="tab" data-tab="tools">Tools</div>
   </div>
 
-  <!-- USERS -->
+  <!-- USERS TAB -->
   <div id="users" class="tab-content">
-    <input type="text" id="search-users" placeholder="Search wallet or @handle..." class="w-full p-4 glass rounded-lg mb-6 text-white placeholder-gray-400 text-lg">
+    <input type="text" id="search" placeholder="Search wallet or twitter..." class="w-full p-4 glass rounded-lg mb-6 text-white placeholder-gray-400">
     <div class="glass rounded-xl overflow-hidden shadow-2xl overflow-x-auto">
-      <table id="users-table">
+      <table>
         <thead>
           <tr>
             <th>Wallet</th>
@@ -48,148 +43,117 @@
             <th>Level</th>
             <th>Twitter</th>
             <th>Total Tickets</th>
-            <th>Raffle Items</th>
-            <th>Action</th>
+            <th>Items Unlocked</th>
+            <th>Reset</th>
           </tr>
         </thead>
-        <tbody class="text-gray-300"></tbody>
+        <tbody id="table-body" class="text-gray-300"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- MISSIONS -->
+  <!-- MISSIONS TAB -->
   <div id="missions" class="tab-content hidden">
     <h2 class="text-3xl font-bold mb-6 text-yellow-400">Pending X Submissions</h2>
     <div id="missions-list" class="space-y-5"></div>
   </div>
 
-  <!-- RAFFLES -->
-  <div id="raffles" class="tab-content hidden">
-    <h2 class="text-3xl font-bold mb-6 text-yellow-400">Raffle Entries</h2>
-    <div class="flex flex-wrap gap-4 mb-8">
-      <button onclick="loadRaffle('socks')" class="btn bg-indigo-600 hover:bg-indigo-500">Socks</button>
-      <button onclick="loadRaffle('pen')" class="btn bg-pink-600 hover:bg-pink-500">Pen</button>
-      <button onclick="loadRaffle('polo')" class="btn bg-teal-600 hover:bg-teal-500">Polo</button>
-      <button onclick="loadRaffle('mug')" class="btn bg-orange-600 hover:bg-orange-500">Mug</button>
-      <button onclick="loadRaffle('watch')" class="btn bg-purple-700 hover:bg-purple-600">Watch</button>
-    </div>
-    <div id="raffle-list" class="glass p-8 rounded-xl text-center text-gray-400"></div>
-  </div>
-
   <!-- TOOLS -->
   <div id="tools" class="tab-content hidden">
-    <h2 class="text-3xl font-bold mb-8 text-yellow-400">Admin Tools</h2>
+    <h2 class="text-3xl font-bold mb-8 text-yellow-400">Tools</h2>
     <div class="grid md:grid-cols-2 gap-8">
-      <div class="card">
-        <h3 class="text-xl font-bold mb-4">Reset Individual User</h3>
-        <input id="reset-wallet-input" placeholder="Enter wallet address" class="w-full p-4 glass rounded mb-4 text-white">
-        <button onclick="resetSingleUser()" class="w-full reset py-3 text-lg">Reset This User</button>
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-xl font-bold mb-4">Reset Single User</h3>
+        <input id="reset-input" placeholder="Wallet address" class="w-full p-3 glass rounded mb-4">
+        <button onclick="resetUser()" class="w-full reset py-3">Reset User</button>
       </div>
-      <div class="card border-red-600/50">
+      <div class="glass p-6 rounded-xl border border-red-600">
         <h3 class="text-2xl font-bold mb-4 text-red-400">DANGER ZONE</h3>
-        <p class="mb-6 text-gray-300">Reset ALL users — new season start</p>
-        <button onclick="resetAllUsers()" class="w-full danger py-4 text-lg font-bold">RESET ENTIRE SEASON</button>
+        <button onclick="resetAll()" class="w-full danger py-4 font-bold">RESET ENTIRE SEASON</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  const ADMIN_KEY = "4924049830";
-  const BASE_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
+  const KEY = "4924049830";
+  const URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
 
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.onclick = () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-      tab.classList.add('active');
-      document.getElementById(tab.dataset.tab).classList.remove('hidden');
-      if (tab.dataset.tab === 'users') loadUsers();
-      if (tab.dataset.tab === 'missions') loadMissions();
-    };
+  document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x => x.classList.add('hidden'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.tab).classList.remove('hidden');
+    if (t.dataset.tab === 'users') load();
+    if (t.dataset.tab === 'missions') loadMissions();
   });
 
-  async function loadUsers() {
+  async function load() {
     try {
-      const res = await fetch(`${BASE_URL}/all-users`, { headers: { 'X-Admin-Key': ADMIN_KEY } });
-      if (!res.ok) throw new Error(await res.text());
+      const res = await fetch(`${URL}/all-users`, { headers: { 'X-Admin-Key': KEY } });
+      if (!res.ok) throw await res.text();
       const users = await res.json();
 
-      const search = document.getElementById('search-users').value.toLowerCase();
-      const filtered = users.filter(u =>
-        u.wallet.toLowerCase().includes(search) ||
-        (u.twitter && u.twitter.toLowerCase().includes(search))
-      );
+      const search = document.getElementById('search').value.toLowerCase();
+      const filtered = users.filter(u => u.wallet.includes(search) || (u.twitter && u.twitter.toLowerCase().includes(search)));
 
-      document.querySelector('#users-table tbody').innerHTML = filtered.map(u => {
-        const r = u.raffles || {};
-        const total = u.raffleCount || 0;
-        const tags = Object.entries(r).map(([item, count]) => {
-          const colors = { socks: "bg-indigo-600", pen: "bg-pink-600", polo: "bg-teal-600", mug: "bg-orange-600", watch: "bg-purple-600" };
-          return `<span class="raffle-tag ${colors[item] || 'bg-gray-600'} text-white">${item}: ${count}</span>`;
-        }).join(' ');
-
+      document.getElementById('table-body').innerHTML = filtered.map(u => {
+        const items = Object.entries(u.raffles || {})
+          .map(([item, cnt]) => {
+            const colors = { socks: "bg-indigo-600", pen: "bg-pink-600", polo: "bg-teal-600", mug: "bg-orange-600", watch: "bg-purple-600" };
+            return `<span class="tag ${colors[item]}">${item}: ${cnt}</span>`;
+          }).join(' ');
         return `
           <tr>
             <td class="font-mono text-xs">${u.wallet.slice(0,8)}...${u.wallet.slice(-6)}</td>
             <td class="text-right font-bold text-yellow-400">${u.xp}</td>
             <td class="text-right">${u.level}</td>
-            <td>${u.twitter ? `@${u.twitter}` : '—'}</td>
-            <td class="text-right font-bold text-green-400">${total}</td>
-            <td>${tags || '—'}</td>
-            <td><button onclick="resetSingleUser('${u.wallet}')" class="reset px-3 py-1 rounded">Reset</button></td>
-          </tr>
-        `;
-      }).join('') || '<tr><td colspan="7" class="text-center py-12 text-gray-500">No users yet</td></tr>';
-
+            <td>${u.twitter ? '@'+u.twitter : '—'}</td>
+            <td class="text-right font-bold text-green-400">${u.raffleCount}</td>
+            <td>${items || '—'}</td>
+            <td><button onclick="resetUser('${u.wallet}')" class="reset">Reset</button></td>
+          </tr>`;
+      }).join('') || '<tr><td colspan="7" class="text-center py-12 text-gray-500">No users</td></tr>';
     } catch (e) {
-      document.querySelector('#users-table tbody').innerHTML = `<tr><td colspan="7" class="text-center py-12 text-red-400">Error: ${e.message}</td></tr>`;
+      document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="text-center py-12 text-red-400">${e}</td></tr>`;
     }
   }
 
   async function loadMissions() {
-    const res = await fetch(`${BASE_URL}/missions`);
-    const queue = await res.json();
-    document.getElementById('missions-list').innerHTML = queue.length ? queue.map(m => `
-      <div class="card flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    const res = await fetch(`${URL}/missions`);
+    const q = await res.json();
+    document.getElementById('missions-list').innerHTML = q.length ? q.map(m => `
+      <div class="glass p-5 rounded-xl flex justify-between items-center">
         <div>
-          <div class="font-bold text-lg">${m.wallet.slice(0,10)}...${m.wallet.slice(-8)}</div>
-          <div class="text-cyan-400">@${m.twitter || '???'}</div>
+          <div class="font-bold">${m.wallet.slice(0,10)}...${m.wallet.slice(-8)}</div>
+          <div class="text-cyan-400">@${m.twitter}</div>
           <a href="${m.url}" target="_blank" class="text-yellow-400 underline">View Post</a>
         </div>
-        <div class="flex gap-3">
-          <button onclick="fetch('${BASE_URL}/approve-mission',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':ADMIN_KEY},body:JSON.stringify({wallet:'${m.wallet}',mission:'${m.mission}',xp:200})}).then(()=>loadMissions())" class="approve px-6 py-3">+200 XP</button>
-          <button onclick="fetch('${BASE_URL}/deny-mission',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':ADMIN_KEY},body:JSON.stringify({wallet:'${m.wallet}',mission:'${m.mission}'})}).then(()=>loadMissions())" class="deny px-6 py-3">Deny</button>
+        <div class="space-x-3">
+          <button onclick="fetch('${URL}/approve-mission',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':'${KEY}'},body:JSON.stringify({wallet:'${m.wallet}',mission:'${m.mission}',xp:200})}).then(()=>loadMissions()" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 rounded font-bold">+200 XP</button>
+          <button onclick="fetch('${URL}/deny-mission',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':'${KEY}'},body:JSON.stringify({wallet:'${m.wallet}',mission:'${m.mission}'})}).then(()=>loadMissions()" class="px-6 py-2 bg-red-600 hover:bg-red-500 rounded font-bold">Deny</button>
         </div>
       </div>
-    `).join('') : '<div class="text-center py-16 text-gray-500 text-xl">No pending submissions</div>';
+    `).join('') : '<p class="text-center py-16 text-gray-500">No pending missions</p>';
   }
 
-  async function loadRaffle(item) {
-    const res = await fetch(`${BASE_URL}/raffle-entries?item=${item}`);
-    const entries = await res.json();
-    document.getElementById('raffle-list').innerHTML = `
-      <h3 class="text-2xl font-bold mb-6 text-yellow-400">${item.toUpperCase()} — ${entries.length} entries</h3>
-      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-sm">
-        ${entries.map(e => `<div class="bg-gray-800 p-4 rounded font-mono text-center">${e.wallet.slice(0,10)}...</div>`).join('')}
-      </div>`;
+  function resetUser(w) {
+    if (!w) w = document.getElementById('reset-input').value.trim();
+    if (!w || !confirm('Reset this user?')) return;
+    fetch(`${URL}/reset-user`, {method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':KEY},body:JSON.stringify({wallet:w})})
+      .then(()=>load());
   }
 
-  function resetSingleUser(w) {
-    if (!w) w = document.getElementById('reset-wallet-input').value.trim();
-    if (!w || !confirm("Reset this user to 0 XP?")) return;
-    fetch(`${BASE_URL}/reset-user`, {method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':ADMIN_KEY},body:JSON.stringify({wallet:w})}).then(()=>loadUsers());
+  function resetAll() {
+    if (!confirm('RESET EVERYTHING?')) return;
+    if (prompt('Type: I AM SURE') !== 'I AM SURE') return;
+    fetch(`${URL}/reset-all`, {method:'POST',headers:{'X-Admin-Key':KEY}})
+      .then(()=>{alert('Season reset!'); load();});
   }
 
-  function resetAllUsers() {
-    if (!confirm("RESET EVERYTHING?")) return;
-    if (prompt("Type: I AM SURE") !== "I AM SURE") return;
-    fetch(`${BASE_URL}/reset-all`, {method:'POST',headers:{'X-Admin-Key':ADMIN_KEY}}).then(()=>{alert("Season reset!"); loadUsers();});
-  }
-
-  document.getElementById('search-users').addEventListener('input', loadUsers);
-  setInterval(() => { if (document.querySelector('.tab.active')?.dataset.tab === 'users') loadUsers(); }, 8000);
-  loadUsers();
+  document.getElementById('search').addEventListener('input', load);
+  setInterval(() => { if (document.querySelector('.tab.active').dataset.tab==='users') load(); }, 10000);
+  load();
 </script>
 </body>
 </html>
