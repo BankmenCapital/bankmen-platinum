@@ -159,14 +159,14 @@
           <a href="${m.url}" target="_blank" class="text-yellow-400 underline">View Post</a>
         </div>
         <div class="flex gap-3">
-          <button onclick="approve('${m.wallet}','${m.mission}')" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 rounded font-bold">+200 XP</button>
+          <button onclick="approve('${m.wallet}','${m.mission}')" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 rounded font-bold">+400 XP</button>
           <button onclick="deny('${m.wallet}','${m.mission}')" class="px-8 py-3 bg-red-600 hover:bg-red-500 rounded font-bold">Deny</button>
         </div>
       </div>
     `).join('') : '<div class="text-center py-16 text-gray-500 text-xl">No pending submissions</div>';
   }
 
-  const approve = (w,m) => fetch(`${BASE_URL}/approve-mission`, {method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':ADMIN_KEY},body:JSON.stringify({wallet:w,mission:m,xp:200})}).then(()=>loadMissions());
+  const approve = (w,m) => fetch(`${BASE_URL}/approve-mission`, {method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':ADMIN_KEY},body:JSON.stringify({wallet:w,mission:m,xp:400})}).then(()=>loadMissions());
   const deny   = (w,m) => fetch(`${BASE_URL}/deny-mission`,   {method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':ADMIN_KEY},body:JSON.stringify({wallet:w,mission:m})}).then(()=>loadMissions());
 
   // Raffle Tab
