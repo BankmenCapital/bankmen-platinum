@@ -504,6 +504,48 @@ autoCheckRaffle();  // ← run on login/load
   }
 </script>
 
-  
+
+
+      
+<script>
+// AUTO CHECK & UNLOCK ALL RAFFLE TICKETS ON PAGE LOAD — ONLY ONCE PER VISIT
+(async () => {
+  // Change this to however you store your token
+  const token = localStorage.getItem("token") || 
+                localStorage.getItem("bankmen_token") || 
+                localStorage.getItem("jwt") ||
+                null;
+
+  if (!token) {
+    console.log("No token found — not checking raffle unlocks");
+    return;
+  }
+
+  try {
+    const response = await fetch("https://nft-dashboard-verifier.bankmen-verifier.workers.dev/check-raffle-unlocks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token })
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      if (result.added > 0) {
+        console.log(`Unlocked ${result.added} new raffle tickets! 🎉`);
+        // Optional: show a toast/notification
+        // alert(`Just unlocked ${result.added} raffle entries!`);
+      }
+    } else {
+      console.log("Raffle check failed:", await response.text());
+    }
+  } catch (err) {
+    console.log("Raffle unlock check error (safe to ignore):", err);
+  }
+})();
+</script>
+
+
+
+      
 </body>
 </html>
