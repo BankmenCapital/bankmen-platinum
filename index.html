@@ -1,18 +1,20 @@
-
 <!DOCTYPE html>
 <html lang="en" class="h-full">
 <head>
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png">
-  <link rel="manifest" href="/site.webmanifest">
 
+      <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon.png">
+<link rel="manifest" href="/site.webmanifest">
+
+
+      
+
+  
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bankmen Platinum — Season 1</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-
-  <!-- Base58 inline (your working version) -->
   <script>
     (function () {
       var bas58 = {};
@@ -20,41 +22,67 @@
       var _BASE = 58;
       var _MAP = {};
       for (var i = 0; i < _ALPHABET.length; i++) _MAP[_ALPHABET.charAt(i)] = i;
-      function encode(buffer) { if (buffer.length === 0) return ''; var digits = [0]; for (var i = 0; i < buffer.length; ++i) { for (var j=0;j<digits.length;++j)digits[j]<<=8; digits[0]+=buffer[i]; var carry=0; for(var k=0;k<digits.length;++k){digits[k]+=carry; carry=(digits[k]/58)|0; digits[k]%=58;} while(carry){digits.push(carry%58);carry=(carry/58)|0;} } for(var i=0;buffer[i]===0&&i<buffer.length-1;++i)digits.push(0); return digits.reverse().map(d=>_ALPHABET[d]).join(''); }
-      function decode(string) { if (string.length === 0) return new Uint8Array(0); var bytes = [0]; for (var i = 0; i < string.length; i++) { var c = string[i]; if (!(c in _MAP)) throw new Error('Invalid'); var value = _MAP[c]; for (var j = 0; j < bytes.length; ++j) bytes[j] *= 58; bytes[0] += value; var carry = 0; for (var j = 0; j < bytes.length; ++j) { bytes[j] += carry; carry = bytes[j] >> 8; bytes[j] &= 0xff; } while (carry) { bytes.push(carry & 0xff); carry >>= 8; } } for (var i = 0; string[i] === '1' && i < string.length - 1; ++i) bytes.push(0); return new Uint8Array(bytes.reverse()); }
+      function encode(buffer) { if (buffer.length === 0) return ''; var digits = [0]; for (var i = 0; i < buffer.length; ++i) { for (var j = 0; j < digits.length; ++j) digits[j] <<= 8; digits[0] += buffer[i]; var carry = 0; for (var k = 0; k < digits.length; ++k) { digits[k] += carry; carry = digits[k] / _BASE | 0; digits[k] %= _BASE; } while (carry) { digits.push(carry % _BASE); carry = carry / _BASE | 0; } } for (var i = 0; buffer[i] === 0 && i < buffer.length - 1; ++i) digits.push(0); return digits.reverse().map(d => _ALPHABET[d]).join(''); }
+      function decode(string) { if (string.length === 0) return new Uint8Array(0); var bytes = [0]; for (var i = 0; i < string.length; i++) { var c = string[i]; if (!(c in _MAP)) throw new Error('Invalid'); var value = _MAP[c]; for (var j = 0; j < bytes.length; ++j) bytes[j] *= _BASE; bytes[0] += value; var carry = 0; for (var j = 0; j < bytes.length; ++j) { bytes[j] += carry; carry = bytes[j] >> 8; bytes[j] &= 0xff; } while (carry) { bytes.push(carry & 0xff); carry >>= 8; } } for (var i = 0; string[i] === '1' && i < string.length - 1; ++i) bytes.push(0); return new Uint8Array(bytes.reverse()); }
       bas58.encode = encode; bas58.decode = decode; window.bs58 = bas58;
     })();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
 
+
+
+  
+  
+
   <style>
     html, body { height: 100%; margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; }
     #bg { position: fixed; inset: 0; z-index: -1; }
     #bg img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
-    .glass { backdrop-filter: blur(12px); background: rgba(20,20,40,0.45); border: 1px solid rgba(251,191,36,0.3); }
-    #levels-container { overflow-x: auto; overflow-y: hidden; display: flex; align-items: center; height: 180px; padding: 0 1rem; gap: 12px; }
-    .level-tile { width: 118px; height: 160px; transition: all 0.2s; position: relative; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 12px 8px; border-radius: 1rem; border: 2px solid; text-align: center; flex-shrink: 0; }
-    .level-tile.unlocked { border-color: #fbbf24; box-shadow: 0 0 16px rgba(251,191,36,0.4); }
+    .glass { backdrop-filter: blur(12px); background: rgba(20, 20, 40, 0.45); border: 1px solid rgba(251, 191, 36, 0.3); }
+    
+    /* BATTLEPASS */
+    #levels-container {
+      overflow-x: auto; overflow-y: hidden; display: flex; align-items: center;
+      height: 180px; padding: 0 1rem; gap: 12px;
+    }
+    .level-tile {
+      width: 118px; height: 160px; transition: all 0.2s ease; position: relative;
+      display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+      padding: 12px 8px; border-radius: 1rem; border: 2px solid; text-align: center; flex-shrink: 0;
+    }
+    .level-tile.unlocked { border-color: #fbbf24; box-shadow: 0 0 16px rgba(251, 191, 36, 0.4); }
     .level-tile.locked { border-color: #374151; }
-    .level-tile.current { box-shadow: 0 0 24px rgba(251,191,36,0.7); }
+    .level-tile.current { box-shadow: 0 0 24px rgba(251, 191, 36, 0.7); }
+
     .xp-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); transition: width 1.2s ease; }
-    .scroll-btn { width: 48px; height: 48px; background: rgba(251,191,36,0.2); border: 2px solid #fbbf24; display: flex; align-items: center; justify-content: center; }
-    .scroll-btn:hover { background: rgba(251,191,36,0.4); }
-    .scroll-left-btn::before { content: 'Left Arrow'; color: #fbbf24; font-size: 1.8rem; }
-    .scroll-right-btn::before { content: 'Right Arrow'; color: #fbbf24; font-size: 1.8rem; }
+
+    /* ARROWS — FIXED */
+    .scroll-btn {
+      width: 48px; height: 48px; background: rgba(251, 191, 36, 0.2); border: 2px solid #fbbf24;
+      display: flex; align-items: center; justify-content: center; position: relative; user-select: none; overflow: hidden;
+    }
+    .scroll-btn:hover { background: rgba(251, 191, 36, 0.4); }
+    .scroll-left-btn::before { content: 'Left Arrow'; color: #fbbf24; font-weight: bold; font-size: 1.8rem; position: absolute; }
+    .scroll-right-btn::before { content: 'Right Arrow'; color: #fbbf24; font-weight: bold; font-size: 1.8rem; position: absolute; }
+
     .xp-pop { position: absolute; font-weight: 900; color: #fbbf24; pointer-events: none; animation: floatUp 1.5s forwards; }
     @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-80px); opacity: 0; } }
     #daily-btn { animation: pulse 2s infinite; }
     @keyframes pulse { 0%,100% { box-shadow: 0 0 20px rgba(251,191,36,0.6); } 50% { box-shadow: 0 0 30px rgba(251,191,36,1); } }
-    #image-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; padding: 2rem; }
-    #modal-img { max-width: 100%; max-height: 100%; border: 3px solid #fbbf24; border-radius: 12px; box-shadow: 0 0 40px rgba(251,191,36,0.6); }
-    #close-modal { position: absolute; top: 1rem; right: 1rem; font-size: 2rem; color: #fbbf24; cursor: pointer; }
-    .overlay-btn { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); padding: 5px 10px; font-size: 9px; font-weight: bold; border-radius: 9999px; opacity: 0; transition: all 0.2s; pointer-events: none; z-index: 20; }
+
+    /* MODAL */
+    #image-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; padding: 2rem; }
+    #modal-img { max-width: 100%; max-height: 100%; border: 3px solid #fbbf24; border-radius: 12px; box-shadow: 0 0 40px rgba(251, 191, 36, 0.6); }
+    #close-modal { position: absolute; top: 1rem; right: 1rem; font-size: 2rem; color: #fbbf24; cursor: pointer; font-weight: bold; text-shadow: 0 0 10px #000; }
+    #close-modal:hover { transform: scale(1.1); }
+
+    /* OVERLAY BUTTONS */
+    .overlay-btn { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); padding: 5px 10px; font-size: 9px; font-weight: bold; border-radius: 9999px; opacity: 0; transition: all 0.2s ease; pointer-events: none; z-index: 20; }
     .level-tile:hover .overlay-btn, .level-tile.current .overlay-btn { opacity: 1; pointer-events: auto; }
     .overlay-btn.discord { background: #5865F2; color: white; }
     .overlay-btn.discord:hover { background: #4752C4; transform: translateX(-50%) scale(1.05); }
     .overlay-btn.view { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; }
-    .overlay-btn.view:hover { background: linear-gradient(135deg, #0891b2, #2563eb); }
+    .overlay-btn.view:hover { background: linear-gradient(135deg, #0891b2, #2563eb); transform: translateX(-50%) scale(1.05); }
   </style>
 </head>
 <body class="h-full bg-black text-white">
@@ -102,7 +130,7 @@
       <div class="glass w-1/3 p-6 rounded-xl">
         <h2 class="text-2xl font-bold text-yellow-400 mb-4">VAULT NEWS</h2>
         <ul class="space-y-3 text-sm">
-          <li class="glass p-3 rounded">Season 1 Beta is LIVE — Thanks for helping beta test our dashboard!</li>
+          <li class="glass p-3 rounded">Season 1 Beta is LIVE — Thanks for helping beta test our dashboard! Leave some feedback and try to break things while you're here.</li>
           <li class="glass p-3 rounded">Community Take Over!</li>
         </ul>
       </div>
@@ -110,6 +138,7 @@
       <div class="glass w-2/3 p-6 rounded-xl relative">
         <h2 class="text-2xl font-bold text-yellow-400 mb-4">WEEKLY CHALLENGES</h2>
         <div class="grid grid-cols-2 gap-4 text-sm mb-12">
+          <!-- GOLF SWING MISSION -->
           <div class="glass p-4 rounded relative">
             <div class="font-bold text-yellow-400">Post your Bankmen PFP on X + #BankmenCapital (+400 XP)</div>
             <input id="golf-url" type="text" placeholder="Paste X post URL" class="w-full mt-2 p-2 bg-gray-800 rounded text-sm text-white">
@@ -121,11 +150,12 @@
           <div class="glass p-4 rounded">Follow @Bankmen_Capital (+200 XP)</div>
         </div>
 
+        <!-- DEV + DAILY -->
         <div class="absolute bottom-4 right-4 flex gap-3">
           <button id="dev-xp-btn" class="px-4 py-3 bg-purple-600 text-white font-bold rounded-full hover:bg-purple-500 text-sm shadow-lg">
             +200 XP (DEV)
           </button>
-          <button id="daily-btn" class="px-6 py-3 bg-yellow-500 text-black font-bold rounded-full hover:bg-yellow-400 shadow-lg">
+          <button id="daily-btn" class="px-6 py-3 bg-yellow-500 text-black font-bold rounded-full hover:bg-yellow-400 transition shadow-lg">
             DAILY +10 XP
           </button>
         </div>
@@ -140,14 +170,12 @@
         <button id="scroll-right" class="scroll-btn scroll-right-btn rounded-r-full z-10"></button>
       </div>
     </div>
+ <!-- twitter button -->
+    <div class="mb-4">
+  <button id="link-twitter" class="px-4 py-2 bg-blue-600 text-white rounded">Link Twitter</button>
+  <span id="twitter-status" class="ml-2 text-sm text-gray-400">Not linked</span>
+</div>
 
-    <!-- TWITTER BUTTON -->
-    <div class="text-center mb-4">
-      <button id="link-twitter" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-500">
-        Link Twitter
-      </button>
-      <span id="twitter-status" class="ml-4 text-lg text-gray-400">Not linked</span>
-    </div>
   </div>
 
   <!-- MODAL -->
@@ -158,22 +186,12 @@
 
   <script>
     const PRIZES = [null,"Discord “Platinum” role","Phone wallpaper #1","1× Dress Socks Raffle","1x Pen Raffle","Desktop wallpaper #1 (4K)","1x Dress Socks Raffle","1× Pen Raffle","Phone wallpaper #2","1x Coffee Mug Raffle","OG Role","1x Pen Raffle","1× Dress Socks Raffle",null,"1x Coffee Mug Raffle","Spotify Playlist","1x Pen Raffle","1x Coffee Mug Raffle","Desktop wallpaper #2","1x Polo Raffle","ALPHA VAULT channel",null,"1× Coffee Mug Raffle","1x Dress Socks Raffle","1x Polo Raffle","Phone wallpaper #3 (GIF)","1x Dress Socks Raffle","1x Coffee Mug Raffle","1× Polo Raffle","1x Quarter Zip","HOLDER SPOTLIGHT on X","1x Coffee Mug Raffle","1× Socks Raffle",null,"1x Polo Raffle","1× Quarter-Zip Raffle","1x Pen Raffle","1x Dress Socks Raffle","1x Coffee Mug Raffle","1x Polo Raffle","Discord Legendary role","1x Coffee Mug Raffle","1x Quarter Zip Raffle","1x Polo Raffle",null,"1× Polo Raffle","1x Quarter Zip Raffle","1× Grand Watch Raffle","1x Quarter Zip Raffle","90s Anime Art Upgrade","1× GRAND WATCH + Overlord Role"];
-
     const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
-    const DISCORD_WORKER_URL = "https://bankmen-discord-bot.bankmen-verifier.workers.dev"; // ← CHANGE IF NEEDED
-
+    const DISCORD_BOT_URL = "https://bankmen-discord-bot.bankmen-verifier.workers.dev";
     let token = null, pubkey = null, currentXP = 0;
     const XP_PER_LEVEL = 200;
     const TOTAL_LEVELS = 50;
-
-    // Levels that unlock Discord roles
-    const DISCORD_ROLES = {
-      1: "Platinum",
-      10: "OG",
-      20: "Alpha",
-      40: "Legendary",
-      50: "Overlord"
-    };
+    const SCROLL_JUMP = 8;
 
     function showXPPop(amount) {
       const pop = document.createElement("div");
@@ -185,162 +203,136 @@
       setTimeout(() => pop.remove(), 1600);
     }
 
-    async function claimDiscordRole(level) {
-      if (!token) return alert("Connect wallet first!");
-
-      const roleName = DISCORD_ROLES[level];
-      const key = `discord_role_${level}`;
-      if (localStorage.getItem(key)) {
-        return alert(`You already claimed the ${roleName} role!`);
-      }
-
-      const win = window.open(`${DISCORD_WORKER_URL}/login`, "discord_claim", "width=600,height=800");
-
-      const check = setInterval(async () => {
-        if (win.closed) {
-          clearInterval(check);
-          // Ask our main worker if role was given
-          try {
-            const res = await fetch(`${WORKER_URL}/xp?token=${token}`);
-            const data = await res.json();
-            const currentLevel = Math.floor((data.xp || 0) / 200) + 1;
-            if (currentLevel >= level) {
-              localStorage.setItem(key, "true");
-              alert(`${roleName} role assigned! Check Discord`);
-              location.reload(); // refresh tiles to show "CLAIMED"
-            }
-          } catch (e) {}
-        }
-      }, 1000);
-    }
-
     function setupDailyLogin() {
       const btn = document.getElementById("daily-btn");
       const today = new Date().toDateString();
-      if (localStorage.getItem("daily_claimed") === today) {
-        btn.textContent = "CLAIMED"; btn.disabled = true; btn.classList.replace("bg-yellow-500", "bg-gray-600");
-      }
+      const claimed = localStorage.getItem("daily_claimed") === today;
+      if (claimed) { btn.textContent = "CLAIMED"; btn.disabled = true; btn.classList.replace("bg-yellow-500", "bg-gray-600"); }
       btn.onclick = async () => {
+        if (claimed) return;
         try {
           const res = await fetch(`${WORKER_URL}/daily`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) });
-          if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
             currentXP += 10;
             updateXP();
             showXPPop(10);
             localStorage.setItem("daily_claimed", today);
             btn.textContent = "CLAIMED"; btn.disabled = true; btn.classList.replace("bg-yellow-500", "bg-gray-600");
           }
-        } catch { alert("Try again"); }
+        } catch { alert("Backend loading..."); }
       };
     }
 
     function setupDevButton() {
-      document.getElementById("dev-xp-btn")?.addEventListener("click", async () => {
+      const btn = document.getElementById("dev-xp-btn");
+      if (!btn) return;
+      btn.onclick = async () => {
         try {
           const res = await fetch(`${WORKER_URL}/dev-xp`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, amount: 200 }) });
-          if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
             currentXP += 200;
             updateXP();
             showXPPop(200);
+            alert("+200 XP (DEV)");
           }
-        } catch {}
-      });
+        } catch (e) { alert("DEV XP failed: " + e.message); }
+      };
     }
 
     const modal = document.getElementById("image-modal");
     const modalImg = document.getElementById("modal-img");
     const closeModal = document.getElementById("close-modal");
+
+    function viewReward(level) {
+      const prize = PRIZES[level];
+      if (prize && prize.includes("wallpaper")) {
+        const viewImage = level === 2 ? `lv2-view.png` : `lv${level}.png`;
+        modalImg.src = `./assets/rewards/${viewImage}`;
+        modal.style.display = "flex";
+      } else {
+        alert(`Level ${level}: ${prize || "Coming soon"}\n(Feature in development)`);
+      }
+    }
+
     closeModal.onclick = () => modal.style.display = "none";
     modal.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
 
-    function viewReward(level) {
-      if (PRIZES[level]?.includes("wallpaper")) {
-        modalImg.src = `./assets/rewards/lv${level}.png`;
-        modal.style.display = "flex";
-      } else {
-        alert(`Level ${level}: ${PRIZES[level] || "Coming soon"}`);
-      }
+    async function claimDiscordRole() {
+      if (localStorage.getItem("discord_claimed")) { alert("Already claimed!"); return; }
+      const win = window.open(`${DISCORD_BOT_URL}/login`, "discord", "width=500,height=600");
+      const check = setInterval(() => {
+        if (win.closed) {
+          clearInterval(check);
+          localStorage.setItem("discord_claimed", "true");
+          alert("Platinum role assigned! Check Discord.");
+          const btn = document.querySelector(".level-tile .overlay-btn.discord");
+          if (btn) btn.textContent = "CLAIMED";
+        }
+      }, 1000);
     }
 
     async function submitGolfSwing() {
       const url = document.getElementById("golf-url").value.trim();
-      if (!url) return document.getElementById("golf-status").textContent = "Enter URL";
+      if (!url) return document.getElementById("golf-status").textContent = "Enter X post URL";
       document.getElementById("golf-status").textContent = "Submitting...";
-      const res = await fetch(`${WORKER_URL}/submit-mission`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, mission: 'golf_swing', url, xp: 400 })
-      });
-      const data = await res.json();
-      document.getElementById("golf-status").textContent = data.success ? "Submitted!" : data.error || "Error";
-      if (data.success) document.getElementById("golf-url").disabled = true;
+      try {
+        const res = await fetch(`${WORKER_URL}/submit-mission`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, mission: 'golf_swing', url, xp: 400 })
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById("golf-status").textContent = "Submitted! Awaiting approval.";
+          document.getElementById("golf-url").disabled = true;
+        } else {
+          document.getElementById("golf-status").textContent = data.error;
+        }
+      } catch (e) {
+        document.getElementById("golf-status").textContent = "Error. Try again.";
+      }
     }
 
-    async function loadXP() {
-      const res = await fetch(`${WORKER_URL}/xp?token=${token}`);
-      const data = await res.json();
-      currentXP = data.xp || 0;
-      if (data.twitter) {
-        document.getElementById('twitter-status').textContent = `Linked: @${data.twitter}`;
-        document.getElementById('link-twitter').textContent = 'Change Twitter';
+    async function claimRaffleTicket(level) {
+      const prize = PRIZES[level];
+      const match = prize.match(/(\d+)×\s(.+)\sRaffle/);
+      if (!match) return;
+      const [_, countStr, item] = match;
+      const count = parseInt(countStr);
+      const itemKey = item.toLowerCase().replace(/ /g, '_');
+
+      try {
+        const res = await fetch(`${WORKER_URL}/claim-raffle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, level, count, item: itemKey })
+        });
+        const data = await res.json();
+        if (data.success) {
+          const pop = document.createElement("div");
+          pop.className = "xp-pop text-3xl text-green-400";
+          pop.textContent = `+${count} ${item} TICKET${count > 1 ? 'S' : ''}!`;
+          pop.style.left = `${Math.random() * 50 + 25}%`;
+          pop.style.top = "30%";
+          document.getElementById("dashboard").appendChild(pop);
+          setTimeout(() => pop.remove(), 1600);
+        }
+      } catch (e) {
+        console.error("Raffle claim failed:", e);
       }
-      updateXP();
     }
 
-    function updateXP() {
-      const level = Math.min(Math.floor(currentXP / 200) + 1, 50);
-      const progress = (currentXP % 200) / 200 * 100;
-      document.getElementById("xp").textContent = currentXP.toLocaleString();
-      document.getElementById("xp-fill").style.width = progress + "%";
-      document.getElementById("level").textContent = level;
-      document.getElementById("xp-progress").textContent = `${currentXP % 200} / 200 XP`;
-      document.querySelectorAll(".level-tile").forEach((t, i) => t.classList.toggle("current", i + 1 === level));
-    }
-
-    function buildBattlepass() {
-      const container = document.getElementById("levels-container");
-      const level = Math.floor(currentXP / 200) + 1;
-
-      for (let i = 1; i <= TOTAL_LEVELS; i++) {
-        const tile = document.createElement("div");
-        const unlocked = i <= level;
-        const hasDiscordRole = DISCORD_ROLES[i];
-        const claimed = hasDiscordRole && localStorage.getItem(`discord_role_${i}`);
-
-        tile.className = `level-tile glass ${unlocked ? 'unlocked' : 'locked'} ${i === level ? 'current' : ''}`;
-
-        tile.innerHTML = `
-          <div class="text-xl font-black ${unlocked ? 'text-yellow-400' : 'text-gray-600'} mb-1">Lv ${i}</div>
-          ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-12 h-12 mx-auto object-contain drop-shadow-lg mb-1">` : ''}
-          <div class="text-xs font-medium opacity-80 mb-1">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
-          <div class="text-xs leading-tight text-gray-300 text-center px-1">${PRIZES[i] || ""}</div>
-
-          ${hasDiscordRole ? `
-            <button onclick="claimDiscordRole(${i})" class="overlay-btn discord">
-              ${claimed ? "CLAIMED" : "CLAIM ROLE"}
-            </button>
-          ` : ''}
-
-          ${unlocked && PRIZES[i]?.includes("wallpaper") ? `
-            <button onclick="viewReward(${i})" class="overlay-btn view">VIEW</button>
-          ` : ''}
-        `;
-        container.appendChild(tile);
-      }
-
-      // Auto-scroll to current level
-      const currentTile = container.children[level - 1];
-      if (currentTile) {
-        container.scrollLeft = currentTile.offsetLeft - container.offsetWidth / 2 + 60;
-      }
-
-      document.getElementById("scroll-left").onclick = () => container.scrollBy({ left: -800, behavior: "smooth" });
-      document.getElementById("scroll-right").onclick = () => container.scrollBy({ left: 800, behavior: "smooth" });
+    function waitForPhantom() {
+      if (window.solana?.isPhantom && typeof bs58 !== 'undefined') initApp();
+      else setTimeout(waitForPhantom, 100);
     }
 
     async function initApp() {
       document.getElementById("connect-btn").onclick = async () => {
         try {
+          document.getElementById("status").textContent = "Opening Phantom...";
           const resp = await window.solana.connect();
           pubkey = resp.publicKey.toBase58();
           const message = `Bankmen Platinum - ${Date.now()}`;
@@ -349,14 +341,12 @@
           const sigBase58 = bs58.encode(signature);
 
           const res = await fetch(`${WORKER_URL}/auth`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+            method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ pubkey, signature: sigBase58, message })
           });
           const data = await res.json();
           if (data.token) {
             token = data.token;
-            localStorage.setItem("bankmen_token", token); // saved for Discord worker
             document.getElementById("connect-section").classList.add("hidden");
             document.getElementById("dashboard").classList.remove("hidden");
             document.getElementById("wallet").textContent = pubkey.slice(0,4)+"..."+pubkey.slice(-4);
@@ -364,39 +354,156 @@
             setupDailyLogin();
             setupDevButton();
             buildBattlepass();
-          } else {
-            document.getElementById("status").textContent = data.error || "Auth failed";
-          }
-        } catch (e) {
-          document.getElementById("status").textContent = e.message;
-        }
+          } else document.getElementById("status").textContent = data.error || "No NFT";
+        } catch (e) { document.getElementById("status").textContent = e.message; }
       };
     }
 
-    // Twitter linking (unchanged)
-    document.getElementById('link-twitter').onclick = () => {
-      if (!token) return alert('Connect wallet first!');
-      window.open(`${WORKER_URL}/link-twitter?token=${token}`, 'twitter-link', 'width=600,height=700');
-    };
+       async function loadXP() {
+      const res = await fetch(`${WORKER_URL}/xp?token=${token}`);
+      const data = await res.json();
+      currentXP = data.xp || 0;
 
-    // Auto-check raffle unlocks on load
-    (async () => {
-      const savedToken = localStorage.getItem("bankmen_token");
-      if (savedToken) {
-        token = savedToken;
-        await fetch(`${WORKER_URL}/check-raffle-unlocks`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token })
-        }).catch(() => {});
+      // Update Twitter status from user object
+      if (data.twitter) {
+        document.getElementById('twitter-status').textContent = `Linked: @${data.twitter}`;
+        document.getElementById('link-twitter').textContent = 'Change Twitter';
       }
-    })();
 
-    function waitForPhantom() {
-      if (window.solana?.isPhantom) initApp();
-      else setTimeout(waitForPhantom, 100);
+      updateXP();
     }
+
+    async function updateXP() {
+      const oldLevel = parseInt(document.getElementById("level").textContent);
+      const newLevel = Math.min(Math.floor(currentXP / XP_PER_LEVEL) + 1, TOTAL_LEVELS);
+      const progress = (currentXP % XP_PER_LEVEL) / XP_PER_LEVEL * 100;
+
+      document.getElementById("xp").textContent = currentXP.toLocaleString();
+      document.getElementById("xp-fill").style.width = progress + "%";
+      document.getElementById("level").textContent = newLevel;
+      document.getElementById("xp-progress").textContent = `${currentXP % XP_PER_LEVEL} / ${XP_PER_LEVEL} XP`;
+      document.querySelectorAll(".level-tile").forEach((t, i) => t.classList.toggle("current", i + 1 === newLevel));
+
+      // AUTO-CLAIM RAFFLE TICKETS ON LEVEL UP
+      for (let lvl = oldLevel + 1; lvl <= newLevel; lvl++) {
+        const prize = PRIZES[lvl];
+        if (prize && prize.includes('Raffle')) {
+          await claimRaffleTicket(lvl);
+        }
+      }
+    }
+
+    function buildBattlepass() {
+      const container = document.getElementById("levels-container");
+      const level = Math.floor(currentXP / XP_PER_LEVEL) + 1;
+      for (let i = 1; i <= TOTAL_LEVELS; i++) {
+        const tile = document.createElement("div");
+        const isUnlocked = i <= level;
+        const showView = isUnlocked && i >= 2 && PRIZES[i] && PRIZES[i].includes("wallpaper");
+        const isDiscord = i === 1;
+
+        tile.className = `level-tile glass ${isUnlocked ? 'unlocked' : 'locked'} ${i === level ? 'current' : ''}`;
+
+        tile.innerHTML = `
+          <div class="text-xl font-black ${isUnlocked ? 'text-yellow-400' : 'text-gray-600'} mb-1">Lv ${i}</div>
+          ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-12 h-12 mx-auto object-contain drop-shadow-lg mb-1">` : ''}
+          <div class="text-xs font-medium opacity-80 leading-none mb-1">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
+          <div class="text-xs leading-tight text-gray-300 text-center px-1">${PRIZES[i] || ""}</div>
+          
+          ${isDiscord ? `
+            <button onclick="claimDiscordRole()" class="overlay-btn discord">
+              ${localStorage.getItem("discord_claimed") ? "CLAIMED" : "CONNECT"}
+            </button>
+          ` : ''}
+          
+          ${showView ? `
+            <button onclick="viewReward(${i})" class="overlay-btn view">
+              VIEW
+            </button>
+          ` : ''}
+        `;
+
+        container.appendChild(tile);
+      }
+
+      const currentTile = container.children[level - 1];
+      container.scrollLeft = currentTile.offsetLeft - container.offsetWidth / 2 + 80;
+      const jump = SCROLL_JUMP * 130;
+      document.getElementById("scroll-left").onclick  = () => container.scrollBy({ left: -jump, behavior: "smooth" });
+      document.getElementById("scroll-right").onclick = () => container.scrollBy({ left:  jump, behavior: "smooth" });
+    }
+
+
+
+        // AUTO CHECK RAFFLE UNLOCKS ON EVERY PAGE LOAD
+async function autoCheckRaffle() {
+  const token = localStorage.getItem('token');
+  if (token) {
+    await fetch("https://nft-dashboard-verifier.bankmen-verifier.workers.dev/check-raffle-unlocks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token })
+    });
+  }
+}
+autoCheckRaffle();  // ← run on login/load
+        
+
+        
+
     waitForPhantom();
   </script>
+
+
+
+  
+<script>
+  // ————— FALLBACK POLLING (NO POSTMESSAGE) —————
+  let twitterCheckInterval = null;
+
+  async function startTwitterPolling() {
+    if (twitterCheckInterval) return;
+    twitterCheckInterval = setInterval(() => {
+      const handle = localStorage.getItem('twitter_handle');
+      if (handle) {
+        document.getElementById('twitter-status').textContent = `Linked: @${handle}`;
+        document.getElementById('link-twitter').textContent = 'Change Twitter';
+        clearInterval(twitterCheckInterval);
+        twitterCheckInterval = null;
+      }
+    }, 1000);
+  }
+
+  document.getElementById('link-twitter').onclick = () => {
+    if (!token) return alert('Connect wallet first!');
+    const popup = window.open(
+      `${WORKER_URL}/link-twitter?token=${token}`,
+      'twitter-link',
+      'width=600,height=700'
+    );
+
+    // Start polling
+    startTwitterPolling();
+
+    // Fallback: if popup closes without saving, stop polling
+    const checkClosed = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(checkClosed);
+        setTimeout(() => {
+          if (twitterCheckInterval) clearInterval(twitterCheckInterval);
+        }, 2000);
+      }
+    }, 500);
+  };
+
+  // Initial check
+  const initialHandle = localStorage.getItem('twitter_handle');
+  if (initialHandle) {
+    document.getElementById('twitter-status').textContent = `Linked: @${initialHandle}`;
+    document.getElementById('link-twitter').textContent = 'Change Twitter';
+  }
+</script>
+
+  
 </body>
 </html>
