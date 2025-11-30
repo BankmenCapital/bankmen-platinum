@@ -295,34 +295,6 @@
       }
     }
 
-    async function claimRaffleTicket(level) {
-      const prize = PRIZES[level];
-      const match = prize.match(/(\d+)×\s(.+)\sRaffle/);
-      if (!match) return;
-      const [_, countStr, item] = match;
-      const count = parseInt(countStr);
-      const itemKey = item.toLowerCase().replace(/ /g, '_');
-
-      try {
-        const res = await fetch(`${WORKER_URL}/claim-raffle`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, level, count, item: itemKey })
-        });
-        const data = await res.json();
-        if (data.success) {
-          const pop = document.createElement("div");
-          pop.className = "xp-pop text-3xl text-green-400";
-          pop.textContent = `+${count} ${item} TICKET${count > 1 ? 'S' : ''}!`;
-          pop.style.left = `${Math.random() * 50 + 25}%`;
-          pop.style.top = "30%";
-          document.getElementById("dashboard").appendChild(pop);
-          setTimeout(() => pop.remove(), 1600);
-        }
-      } catch (e) {
-        console.error("Raffle claim failed:", e);
-      }
-    }
 
     function waitForPhantom() {
       if (window.solana?.isPhantom && typeof bs58 !== 'undefined') initApp();
@@ -384,13 +356,6 @@
       document.getElementById("xp-progress").textContent = `${currentXP % XP_PER_LEVEL} / ${XP_PER_LEVEL} XP`;
       document.querySelectorAll(".level-tile").forEach((t, i) => t.classList.toggle("current", i + 1 === newLevel));
 
-      // AUTO-CLAIM RAFFLE TICKETS ON LEVEL UP
-      for (let lvl = oldLevel + 1; lvl <= newLevel; lvl++) {
-        const prize = PRIZES[lvl];
-        if (prize && prize.includes('Raffle')) {
-          await claimRaffleTicket(lvl);
-        }
-      }
     }
 
     function buildBattlepass() {
