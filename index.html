@@ -191,6 +191,7 @@
     const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
     const DISCORD_BOT_URL = "https://bankmen-discord-bot.bankmen-verifier.workers.dev";
         const DISCORD_BOT_URL2 = "https://bankmen-discord-bot2.bankmen-verifier.workers.dev";
+        const DISCORD_BOT_URL3 = "https://bankmen-discord-bot3.bankmen-verifier.workers.dev";
     let token = null, pubkey = null, currentXP = 0;
     const XP_PER_LEVEL = 200;
     const TOTAL_LEVELS = 50;
@@ -275,6 +276,24 @@
         }
       }, 1000);
     }
+
+
+        async function claimDiscordRole20() {
+  if (localStorage.getItem("discord_alpha_claimed")) {
+    alert("You already claimed the Alpha Vault role!");
+    return;
+  }
+  const win = window.open(`${DISCORD_BOT_URL3}/login`, "discord_alpha", "width=600,height=800");
+  const check = setInterval(() => {
+    if (win.closed) {
+      clearInterval(check);
+      localStorage.setItem("discord_alpha_claimed", "true");
+      alert("Alpha Vault channel unlocked! Welcome to the inner circle.");
+      const btn = document.querySelector(".level-tile:nth-child(20) .overlay-btn.discord");
+      if (btn) btn.textContent = "CLAIMED";
+    }
+  }, 1000);
+}
 
     async function submitGolfSwing() {
       const url = document.getElementById("golf-url").value.trim();
@@ -411,6 +430,7 @@
     tile.className = `level-tile glass ${isUnlocked ? 'unlocked' : 'locked'} ${i === level ? 'current' : ''}`;
 
     tile.innerHTML = `
+    
       <div class="text-xl font-black ${isUnlocked ? 'text-yellow-400' : 'text-gray-600'} mb-1">Lv ${i}</div>
       ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-12 h-12 mx-auto object-contain drop-shadow-lg mb-1">` : ''}
       <div class="text-xs font-medium opacity-80 leading-none mb-1">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
@@ -427,6 +447,12 @@
           ${localStorage.getItem("discord_og_claimed") ? "CLAIMED" : "CLAIM OG"}
         </button>
       ` : ''}
+
+      ${i === 20 && isUnlocked ? `
+  <button onclick="claimDiscordRole20()" class="overlay-btn discord">
+    ${localStorage.getItem("discord_alpha_claimed") ? "CLAIMED" : "CLAIM ROLE"}
+  </button>
+` : ''}
       
       ${showView ? `
         <button onclick="viewReward(${i})" class="overlay-btn view">VIEW</button>
