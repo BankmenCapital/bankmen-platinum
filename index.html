@@ -192,6 +192,8 @@
     const DISCORD_BOT_URL = "https://bankmen-discord-bot.bankmen-verifier.workers.dev";
         const DISCORD_BOT_URL2 = "https://bankmen-discord-bot2.bankmen-verifier.workers.dev";
         const DISCORD_BOT_URL3 = "https://bankmen-discord-bot3.bankmen-verifier.workers.dev";
+        const DISCORD_BOT_URL4 = "https://bankmen-discord-bot4.bankmen-verifier.workers.dev";
+        const DISCORD_BOT_URL5 = "https://bankmen-discord-bot5.bankmen-verifier.workers.dev";
     let token = null, pubkey = null, currentXP = 0;
     const XP_PER_LEVEL = 200;
     const TOTAL_LEVELS = 50;
@@ -294,6 +296,26 @@
     }
   }, 1000);
 }
+
+
+async function claimDiscordRole40() {
+  if (localStorage.getItem("discord_legendary_claimed")) {
+    alert("You already claimed the Legendary role!");
+    return;
+  }
+  const win = window.open(`${DISCORD_BOT_URL4}/login`, "discord_legendary", "width=600,height=800");
+  const check = setInterval(() => {
+    if (win.closed) {
+      clearInterval(check);
+      localStorage.setItem("discord_legendary_claimed", "true");
+      alert("LEGENDARY ROLE UNLOCKED. Welcome to the top 1%.");
+      const btn = document.querySelector(".level-tile:nth-child(40) .overlay-btn.discord");
+      if (btn) btn.textContent = "CLAIMED";
+    }
+  }, 1000);
+}
+        
+        
 
     async function submitGolfSwing() {
       const url = document.getElementById("golf-url").value.trim();
@@ -453,6 +475,14 @@
     ${localStorage.getItem("discord_alpha_claimed") ? "CLAIMED" : "CLAIM ROLE"}
   </button>
 ` : ''}
+
+${i === 40 && isUnlocked ? `
+  <button onclick="claimDiscordRole40()" class="overlay-btn discord">
+    ${localStorage.getItem("discord_legendary_claimed") ? "CLAIMED" : "CLAIM ROLE"}
+  </button>
+` : ''}
+
+
       
       ${showView ? `
         <button onclick="viewReward(${i})" class="overlay-btn view">VIEW</button>
