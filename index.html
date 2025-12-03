@@ -314,6 +314,25 @@ async function claimDiscordRole40() {
     }
   }, 1000);
 }
+
+
+
+        async function claimDiscordRole50() {
+  if (localStorage.getItem("discord_overlord_claimed")) {
+    alert("You already claimed the Overlord role!");
+    return;
+  }
+  const win = window.open(`${DISCORD_BOT_URL5}/login`, "discord_overlord", "width=600,height=800");
+  const check = setInterval(() => {
+    if (win.closed) {
+      clearInterval(check);
+      localStorage.setItem("discord_overlord_claimed", "true");
+      alert("OVERLORD ROLE UNLOCKED.\nYou are now the apex predator of the vault.");
+      const btn = document.querySelector(".level-tile:nth-child(50) .overlay-btn.discord");
+      if (btn) btn.textContent = "CLAIMED";
+    }
+  }, 1000);
+}
         
         
 
@@ -479,6 +498,13 @@ async function claimDiscordRole40() {
 ${i === 40 && isUnlocked ? `
   <button onclick="claimDiscordRole40()" class="overlay-btn discord">
     ${localStorage.getItem("discord_legendary_claimed") ? "CLAIMED" : "CLAIM ROLE"}
+  </button>
+` : ''}
+
+
+${i === 50 && isUnlocked ? `
+  <button onclick="claimDiscordRole50()" class="overlay-btn discord">
+    ${localStorage.getItem("discord_overlord_claimed") ? "CLAIMED" : "CLAIM OVERLORD"}
   </button>
 ` : ''}
 
