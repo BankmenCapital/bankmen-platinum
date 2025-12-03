@@ -190,6 +190,7 @@
     const PRIZES = [null,"Discord “Platinum” role","Phone wallpaper #1","1× Dress Socks Raffle","1x Pen Raffle","Desktop wallpaper #1 (4K)","1x Dress Socks Raffle","1× Pen Raffle","Phone wallpaper #2","1x Coffee Mug Raffle","OG Role","1x Pen Raffle","1× Dress Socks Raffle",null,"1x Coffee Mug Raffle","Spotify Playlist","1x Pen Raffle","1x Coffee Mug Raffle","Desktop wallpaper #2","1x Polo Raffle","ALPHA VAULT channel",null,"1× Coffee Mug Raffle","1x Dress Socks Raffle","1x Polo Raffle","Phone wallpaper #3 (GIF)","1x Dress Socks Raffle","1x Coffee Mug Raffle","1× Polo Raffle","1x Quarter Zip","HOLDER SPOTLIGHT on X","1x Coffee Mug Raffle","1× Socks Raffle",null,"1x Polo Raffle","1× Quarter-Zip Raffle","1x Pen Raffle","1x Dress Socks Raffle","1x Coffee Mug Raffle","1x Polo Raffle","Discord Legendary role","1x Coffee Mug Raffle","1x Quarter Zip Raffle","1x Polo Raffle",null,"1× Polo Raffle","1x Quarter Zip Raffle","1× Grand Watch Raffle","1x Quarter Zip Raffle","90s Anime Art Upgrade","1× GRAND WATCH + Overlord Role"];
     const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
     const DISCORD_BOT_URL = "https://bankmen-discord-bot.bankmen-verifier.workers.dev";
+        const DISCORD_BOT_URL2 = "https://bankmen-discord-bot2.bankmen-verifier.workers.dev";
     let token = null, pubkey = null, currentXP = 0;
     const XP_PER_LEVEL = 200;
     const TOTAL_LEVELS = 50;
@@ -395,48 +396,83 @@
       }
     }
 
-    function buildBattlepass() {
-      const container = document.getElementById("levels-container");
-      const level = Math.floor(currentXP / XP_PER_LEVEL) + 1;
-      for (let i = 1; i <= TOTAL_LEVELS; i++) {
-        const tile = document.createElement("div");
-        const isUnlocked = i <= level;
-        const showView = isUnlocked && i >= 2 && PRIZES[i] && PRIZES[i].includes("wallpaper");
-        const isDiscord = i === 1;
+  function buildBattlepass() {
+  const container = document.getElementById("levels-container");
+  const level = Math.floor(currentXP / XP_PER_LEVEL) + 1;
+  container.innerHTML = ""; // clear first
 
-        tile.className = `level-tile glass ${isUnlocked ? 'unlocked' : 'locked'} ${i === level ? 'current' : ''}`;
+  for (let i = 1; i <= TOTAL_LEVELS; i++) {
+    const tile = document.createElement("div");
+    const isUnlocked = i <= level;
+    const showView = isUnlocked && i >= 2 && PRIZES[i] && PRIZES[i].includes("wallpaper");
+    const isDiscordLevel1 = i === 1;
+    const isDiscordLevel10 = i === 10;
 
-        tile.innerHTML = `
-          <div class="text-xl font-black ${isUnlocked ? 'text-yellow-400' : 'text-gray-600'} mb-1">Lv ${i}</div>
-          ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-12 h-12 mx-auto object-contain drop-shadow-lg mb-1">` : ''}
-          <div class="text-xs font-medium opacity-80 leading-none mb-1">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
-          <div class="text-xs leading-tight text-gray-300 text-center px-1">${PRIZES[i] || ""}</div>
-          
-          ${isDiscord ? `
-            <button onclick="claimDiscordRole()" class="overlay-btn discord">
-              ${localStorage.getItem("discord_claimed") ? "CLAIMED" : "CONNECT"}
-            </button>
-          ` : ''}
-          
-          ${showView ? `
-            <button onclick="viewReward(${i})" class="overlay-btn view">
-              VIEW
-            </button>
-          ` : ''}
-        `;
+    tile.className = `level-tile glass ${isUnlocked ? 'unlocked' : 'locked'} ${i === level ? 'current' : ''}`;
 
-        container.appendChild(tile);
-      }
+    tile.innerHTML = `
+      <div class="text-xl font-black ${isUnlocked ? 'text-yellow-400' : 'text-gray-600'} mb-1">Lv ${i}</div>
+      ${PRIZES[i] ? `<img src="./assets/rewards/lv${i}.png" class="w-12 h-12 mx-auto object-contain drop-shadow-lg mb-1">` : ''}
+      <div class="text-xs font-medium opacity-80 leading-none mb-1">${PRIZES[i] ? PRIZES[i].split(" ")[0] : "???"}</div>
+      <div class="text-xs leading-tight text-gray-300 text-center px-1">${PRIZES[i] || ""}</div>
+      
+      ${isDiscordLevel1 && isUnlocked ? `
+        <button onclick="claimDiscordRole()" class="overlay-btn discord">
+          ${localStorage.getItem("discord_claimed") ? "CLAIMED" : "CLAIM ROLE"}
+        </button>
+      ` : ''}
 
-      const currentTile = container.children[level - 1];
-      container.scrollLeft = currentTile.offsetLeft - container.offsetWidth / 2 + 80;
-      const jump = SCROLL_JUMP * 130;
-      document.getElementById("scroll-left").onclick  = () => container.scrollBy({ left: -jump, behavior: "smooth" });
-      document.getElementById("scroll-right").onclick = () => container.scrollBy({ left:  jump, behavior: "smooth" });
+      ${isDiscordLevel10 && isUnlocked ? `
+        <button onclick="claimDiscordRole10()" class="overlay-btn discord">
+          ${localStorage.getItem("discord_og_claimed") ? "CLAIMED" : "CLAIM OG"}
+        </button>
+      ` : ''}
+      
+      ${showView ? `
+        <button onclick="viewReward(${i})" class="overlay-btn view">VIEW</button>
+      ` : ''}
+    `;
+
+    container.appendChild(tile);
+  }
+
+  // Scroll to current level
+  const currentTile = container.children[level - 1];
+  if (currentTile) {
+    container.scrollLeft = currentTile.offsetLeft - container.offsetWidth / 2 + 80;
+  }
+
+  // Arrow controls
+  const jump = SCROLL_JUMP * 130;
+  document.getElementById("scroll-left").onclick  = () => container.scrollBy({ left: -jump, behavior: "smooth" });
+  document.getElementById("scroll-right").onclick = () => container.scrollBy({ left:  jump, behavior: "smooth" });
+}
+
+
+
+
+//og claim
+async function claimDiscordRole10() {
+  if (localStorage.getItem("discord_og_claimed")) {
+    alert("You already claimed the OG role!");
+    return;
+  }
+  const win = window.open(`${DISCORD_BOT_URL2}/login`, "discord_og", "width=600,height=800");
+  const check = setInterval(() => {
+    if (win.closed) {
+      clearInterval(check);
+      localStorage.setItem("discord_og_claimed", "true");
+      alert("OG Role claimed! Check Discord server.");
+      // Update button
+      const btn = document.querySelector(".level-tile:nth-child(10) .overlay-btn.discord");
+      if (btn) btn.textContent = "CLAIMED";
     }
+  }, 1000);
+}
+        
 
 
-
+        
         // AUTO CHECK RAFFLE UNLOCKS ON EVERY PAGE LOAD
 async function autoCheckRaffle() {
   const token = localStorage.getItem('token');
