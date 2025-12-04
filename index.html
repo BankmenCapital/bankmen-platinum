@@ -148,9 +148,27 @@
             <button onclick="submitGolfSwing()" class="mt-2 w-full px-4 py-1 bg-yellow-500 text-black text-xs font-bold rounded">SUBMIT PROOF</button>
             <div id="golf-status" class="text-xs mt-1 text-gray-400"></div>
           </div>
-          <div class="glass p-4 rounded">Like + RT (+200 XP)</div>
-          <div class="glass p-4 rounded">Like + RT (+200 XP)</div>
-          <div class="glass p-4 rounded">Follow @Bankmen_Capital (+200 XP)</div>
+         <!-- REPLACE THESE 4 LINES IN YOUR WEEKLY CHALLENGES SECTION -->
+<div class="glass p-4 rounded">
+  <div class="font-bold text-yellow-400">Follow @Bankmen_Capital (+200 XP)</div>
+  <a href="https://x.com/Bankmen_Capital" target="_blank" class="text-cyan-400 text-sm underline block mt-2">@Bankmen_Capital</a>
+  <button onclick="verifyFollow()" class="mt-2 w-full px-4 py-1 bg-yellow-500 text-black text-xs font-bold rounded">VERIFY FOLLOW</button>
+  <div id="follow-status" class="text-xs mt-1 text-gray-400"></div>
+</div>
+
+<div class="glass p-4 rounded">
+  <div class="font-bold text-yellow-400">Like + RT Tweet #1 (+200 XP)</div>
+  <a href="https://x.com/MaxdeXBT/status/1978911346621133089?s=20" target="_blank" class="text-cyan-400 text-sm underline block mt-2">View Tweet →</a>
+  <button onclick="verifyTweet('1870123456789012345')" class="mt-2 w-full px-4 py-1 bg-yellow-500 text-black text-xs font-bold rounded">VERIFY LIKE+RT</button>
+  <div id="tweet1-status" class="text-xs mt-1 text-gray-400"></div>
+</div>
+
+<div class="glass p-4 rounded">
+  <div class="font-bold text-yellow-400">Like + RT Tweet #2 (+200 XP)</div>
+  <a href="https://x.com/MaxdeXBT/status/1989436110507053138?s=20" target="_blank" class="text-cyan-400 text-sm underline block mt-2">View Tweet →</a>
+  <button onclick="verifyTweet('1870234567890123456')" class="mt-2 w-full px-4 py-1 bg-yellow-500 text-black text-xs font-bold rounded">VERIFY LIKE+RT</button>
+  <div id="tweet2-status" class="text-xs mt-1 text-gray-400"></div>
+</div>
         </div>
 
         <!-- DEV + DAILY -->
@@ -195,6 +213,7 @@
         const DISCORD_BOT_URL3 = "https://bankmen-discord-bot3.bankmen-verifier.workers.dev";
         const DISCORD_BOT_URL4 = "https://bankmen-discord-bot4.bankmen-verifier.workers.dev";
         const DISCORD_BOT_URL5 = "https://bankmen-discord-bot5.bankmen-verifier.workers.dev";
+        const MISSION_WORKER = "https://twitter-mission-verifier.bankmen-verifier.workers.dev";
     let token = null, pubkey = null, currentXP = 0;
     const XP_PER_LEVEL = 200;
     const TOTAL_LEVELS = 50;
@@ -555,6 +574,61 @@ async function claimDiscordRole10() {
         
 
 
+
+// ——— AUTO-VERIFIED TWITTER MISSIONS (SAFE & CLEAN) ———
+async function verifyFollow() {
+  const status = document.getElementById("follow-status");
+  status.textContent = "Checking..."; status.style.color = "#fbbf24";
+  try {
+    const res = await fetch(`${MISSION_WORKER}/verify-follow`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (data.success) {
+      currentXP += 200;
+      updateXP();
+      showXPPop(200);
+      status.textContent = "+200 XP — Verified!";
+      status.style.color = "#34d399";
+    } else {
+      status.textContent = data.error || "Not following yet";
+      status.style.color = "#ef4444";
+    }
+  } catch (e) {
+    status.textContent = "Error — retry";
+    status.style.color = "#ef4444";
+  }
+}
+
+async function verifyTweet(tweetId) {
+  const statusEl = tweetId === "1870123456789012345" ? "tweet1-status" : "tweet2-status";
+  const status = document.getElementById(statusEl);
+  status.textContent = "Checking..."; status.style.color = "#fbbf24";
+  try {
+    const res = await fetch(`${MISSION_WORKER}/verify-tweet?tweet=${tweetId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (data.success) {
+      currentXP += 200;
+      updateXP();
+      showXPPop(200);
+      status.textContent = "+200 XP — Verified!";
+      status.style.color = "#34d399";
+    } else {
+      status.textContent = data.error || "Not done yet";
+      status.style.color = "#ef4444";
+    }
+  } catch (e) {
+    status.textContent = "Error — retry";
+    status.style.color = "#ef4444";
+  }
+}
+
+
+
+
+        
         
         // AUTO CHECK RAFFLE UNLOCKS ON EVERY PAGE LOAD
 async function autoCheckRaffle() {
@@ -575,6 +649,15 @@ autoCheckRaffle();  // ← run on login/load
     waitForPhantom();
   </script>
 
+
+
+
+
+      
+
+      
+
+      
 
 
   
