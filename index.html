@@ -234,17 +234,12 @@
 
 // ——— TWITTER AUTO-VERIFY MISSIONS ———
 async function verifyFollow() {
-  const twitterToken = localStorage.getItem("twitter_token");
-  if (!twitterToken) return alert("Link your Twitter account first!");
-
   const status = document.getElementById("follow-status");
   status.textContent = "Checking...";
-  status.style.color = "#fbbf24";
 
-  try {
-    const res = await fetch(`${TWITTER_MISSION_WORKER}/verify-follow`, {
-      headers: { "Authorization": `Bearer ${twitterToken}` }
-    });
+  const res = await fetch(`https://twitter-mission-verifier.bankmen-verifier.workers.dev/verify-follow`, {
+    headers: { Authorization: `Bearer ${token}` }   // ← your normal dashboard token
+  });
     const data = await res.json();
 
     if (data.success) {
@@ -264,18 +259,10 @@ async function verifyFollow() {
 }
 
 async function verifyTweet(tweetId) {
-  const twitterToken = localStorage.getItem("twitter_token");
-  if (!twitterToken) return alert("Link your Twitter account first!");
-
-  const statusEl = tweetId === "1870123456789012345" ? "tweet1-status" : "tweet2-status";
-  const status = document.getElementById(statusEl);
-  status.textContent = "Checking...";
-  status.style.color = "#fbbf24";
-
-  try {
-    const res = await fetch(`${TWITTER_MISSION_WORKER}/verify-tweet?tweet=${tweetId}`, {
-      headers: { "Authorization": `Bearer ${twitterToken}` }
-    });
+  // same — just use `token` instead of localStorage.getItem("twitter_token")
+  const res = await fetch(`https://twitter-mission-verifier.bankmen-verifier.workers.dev/verify-tweet?tweet=${tweetId}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
     const data = await res.json();
 
     if (data.success) {
