@@ -139,18 +139,39 @@
 
       <div class="glass w-2/3 p-6 rounded-xl relative">
         <h2 class="text-2xl font-bold text-yellow-400 mb-4">WEEKLY CHALLENGES</h2>
-        <div class="grid grid-cols-2 gap-4 text-sm mb-12">
-          <!-- GOLF SWING MISSION -->
-          <div class="glass p-4 rounded relative">
-            <div class="font-bold text-yellow-400">Post your Bankmen PFP on X + #BankmenCapital (+400 XP)</div>
-            <input id="golf-url" type="text" placeholder="Paste X post URL" class="w-full mt-2 p-2 bg-gray-800 rounded text-sm text-white">
-            <button onclick="submitGolfSwing()" class="mt-2 w-full px-4 py-1 bg-yellow-500 text-black text-xs font-bold rounded">SUBMIT PROOF</button>
-            <div id="golf-status" class="text-xs mt-1 text-gray-400"></div>
-          </div>
-          <div class="glass p-4 rounded">Like + RT (+200 XP)</div>
-          <div class="glass p-4 rounded">Like + RT (+200 XP)</div>
-          <div class="glass p-4 rounded">Follow @Bankmen_Capital (+200 XP)</div>
-        </div>
+     <div class="grid grid-cols-2 gap-4 text-sm mb-12">
+  <!-- GOLF SWING MISSION (unchanged) -->
+  <div class="glass p-4 rounded relative">
+    <div class="font-bold text-yellow-400">Post your Bankmen PFP on X + #BankmenCapital (+400 XP)</div>
+    <input id="golf-url" type="text" placeholder="Paste X post URL" class="w-full mt-2 p-2 bg-gray-800 rounded text-sm text-white">
+    <button onclick="submitGolfSwing()" class="mt-2 w-full px-4 py-1 bg-yellow-500 text-black text-xs font-bold rounded">SUBMIT PROOF</button>
+    <div id="golf-status" class="text-xs mt-1 text-gray-400"></div>
+  </div>
+
+  <!-- FOLLOW MISSION -->
+  <div class="glass p-4 rounded">
+    <div class="font-bold text-yellow-400">Follow @Bankmen_Capital (+200 XP)</div>
+    <a href="https://x.com/Bankmen_Capital" target="_blank" class="text-cyan-400 text-sm underline block mt-2">@Bankmen_Capital</a>
+    <button onclick="verifyFollow()" class="mt-2 w-full px-4 py-1 bg-yellow-500 text-black text-xs font-bold rounded">VERIFY FOLLOW</button>
+    <div id="follow-status" class="text-xs mt-1 text-gray-400"></div>
+  </div>
+
+  <!-- TWEET #1 -->
+  <div class="glass p-4 rounded">
+    <div class="font-bold text-yellow-400">Like + RT this week's tweet (+200 XP)</div>
+    <a href="https://x.com/MaxdeXBT/status/1989436110507053138?s=20" target="_blank" class="text-cyan-400 text-sm underline block mt-2">View Tweet #1</a>
+    <button onclick="verifyTweet('1870123456789012345')" class="mt-2 w-full px-4 py-1 bg-yellow-500 text-black text-xs font-bold rounded">VERIFY LIKE + RT</button>
+    <div id="tweet1-status" class="text-xs mt-1 text-gray-400"></div>
+  </div>
+
+  <!-- TWEET #2 -->
+  <div class="glass p-4 rounded">
+    <div class="font-bold text-yellow-400">Like + RT this week's tweet (+200 XP)</div>
+    <a href="https://x.com/MaxdeXBT/status/1978911346621133089?s=20" target="_blank" class="text-cyan-400 text-sm underline block mt-2">View Tweet #2</a>
+    <button onclick="verifyTweet('1870234567890123456')" class="mt-2 w-full px-4 py-1 bg-yellow-500 text-black text-xs font-bold rounded">VERIFY LIKE + RT</button>
+    <div id="tweet2-status" class="text-xs mt-1 text-gray-400"></div>
+  </div>
+</div>
 
         <!-- DEV + DAILY -->
         <div class="absolute bottom-4 right-4 flex gap-3">
@@ -194,6 +215,7 @@
         const DISCORD_BOT_URL3 = "https://bankmen-discord-bot3.bankmen-verifier.workers.dev";
         const DISCORD_BOT_URL4 = "https://bankmen-discord-bot4.bankmen-verifier.workers.dev";
         const DISCORD_BOT_URL5 = "https://bankmen-discord-bot5.bankmen-verifier.workers.dev";
+        const TWITTER_MISSION_WORKER = "https://twitter-mission-verifier.bankmen-verifier.workers.dev";
     let token = null, pubkey = null, currentXP = 0;
     const XP_PER_LEVEL = 200;
     const TOTAL_LEVELS = 50;
@@ -209,6 +231,72 @@
       setTimeout(() => pop.remove(), 1600);
     }
 
+
+// ——— TWITTER AUTO-VERIFY MISSIONS ———
+async function verifyFollow() {
+  const twitterToken = localStorage.getItem("twitter_token");
+  if (!twitterToken) return alert("Link your Twitter account first!");
+
+  const status = document.getElementById("follow-status");
+  status.textContent = "Checking...";
+  status.style.color = "#fbbf24";
+
+  try {
+    const res = await fetch(`${TWITTER_MISSION_WORKER}/verify-follow`, {
+      headers: { "Authorization": `Bearer ${twitterToken}` }
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      currentXP += 200;
+      updateXP();
+      showXPPop(200);
+      status.textContent = "+200 XP — Verified!";
+      status.style.color = "#34d399";
+    } else {
+      status.textContent = data.error || "Not following yet";
+      status.style.color = "#ef4444";
+    }
+  } catch (e) {
+    status.textContent = "Error";
+    status.style.color = "#ef4444";
+  }
+}
+
+async function verifyTweet(tweetId) {
+  const twitterToken = localStorage.getItem("twitter_token");
+  if (!twitterToken) return alert("Link your Twitter account first!");
+
+  const statusEl = tweetId === "1870123456789012345" ? "tweet1-status" : "tweet2-status";
+  const status = document.getElementById(statusEl);
+  status.textContent = "Checking...";
+  status.style.color = "#fbbf24";
+
+  try {
+    const res = await fetch(`${TWITTER_MISSION_WORKER}/verify-tweet?tweet=${tweetId}`, {
+      headers: { "Authorization": `Bearer ${twitterToken}` }
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      currentXP += 200;
+      updateXP();
+      showXPPop(200);
+      status.textContent = "+200 XP — Verified!";
+      status.style.color = "#34d399";
+    } else {
+      status.textContent = data.error || "Like + RT not detected";
+      status.style.color = "#ef4444";
+    }
+  } catch (e) {
+    status.textContent = "Error";
+    status.style.color = "#ef4444";
+  }
+}
+
+
+        
+        
     function setupDailyLogin() {
       const btn = document.getElementById("daily-btn");
       const today = new Date().toDateString();
@@ -584,14 +672,15 @@ autoCheckRaffle();  // ← run on login/load
   async function startTwitterPolling() {
     if (twitterCheckInterval) return;
     twitterCheckInterval = setInterval(() => {
-      const handle = localStorage.getItem('twitter_handle');
-      if (handle) {
-        document.getElementById('twitter-status').textContent = `Linked: @${handle}`;
-        document.getElementById('link-twitter').textContent = 'Change Twitter';
-        clearInterval(twitterCheckInterval);
-        twitterCheckInterval = null;
-      }
-    }, 1000);
+  const handle = localStorage.getItem('twitter_handle');
+  const token = localStorage.getItem('twitter_token'); // ← this line added
+  if (handle) {
+    document.getElementById('twitter-status').textContent = `Linked: @${handle}`;
+    document.getElementById('link-twitter').textContent = 'Change Twitter';
+    clearInterval(twitterCheckInterval);
+    twitterCheckInterval = null;
+  }
+}, 1000);
   }
 
   document.getElementById('link-twitter').onclick = () => {
